@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-
 class BookmarkAdapter(private val items: List<Item>) :
     RecyclerView.Adapter<BookmarkAdapter.ViewHolder>() {
 

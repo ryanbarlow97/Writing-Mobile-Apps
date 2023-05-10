@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
                     val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
                     val navController = navHostFragment.findNavController()
-                    navController.navigate(R.id.ThirdFragment)
+                    navController.navigate(R.id.SearchFragment)
 
                     true
                 }

@@ -9,8 +9,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 
-class ItemsAdapter(private val items: List<Item>) :
+class ItemsAdapter(private var items: MutableList<Item>) :
     RecyclerView.Adapter<ItemsAdapter.ViewHolder>() {
+
 
     private lateinit var context: Context
     private lateinit var listener: CategoriesAdapter.OnItemClickListener
@@ -49,4 +50,11 @@ class ItemsAdapter(private val items: List<Item>) :
     fun setOnItemClickListener(listener: CategoriesAdapter.OnItemClickListener) {
         this.listener = listener
     }
+
+    fun updateItems(newItems: List<Item>) {
+        items.clear()
+        items.addAll(newItems)
+        notifyDataSetChanged()
+    }
+
 }

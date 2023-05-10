@@ -17,8 +17,8 @@
         tools:layout="@layout/fragment_second">
     </fragment>
     <fragment
-        android:id="@+id/ThirdFragment"
-        android:name="com.rbarlow.csc306.ThirdFragment"
+        android:id="@+id/SearchFragment"
+        android:name="com.rbarlow.csc306.SearchFragment"
         android:label="@string/third_fragment_label"
         tools:layout="@layout/fragment_second">
     </fragment>
