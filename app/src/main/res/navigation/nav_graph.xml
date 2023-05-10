@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/HomePageFragment">
+
+    <fragment
+        android:id="@+id/HomePageFragment"
+        android:name="com.rbarlow.csc306.HomePageFragment"
+        android:label="@string/home_pag_fragment_label"
+        tools:layout="@layout/fragment_home_page"></fragment>
+    <fragment
+        android:id="@+id/SecondFragment"
+        android:name="com.rbarlow.csc306.SecondFragment"
+        android:label="@string/second_fragment_label"
+        tools:layout="@layout/fragment_second">
+    </fragment>
+    <fragment
+        android:id="@+id/ThirdFragment"
+        android:name="com.rbarlow.csc306.ThirdFragment"
+        android:label="@string/third_fragment_label"
+        tools:layout="@layout/fragment_second">
+    </fragment>
+    <fragment
+        android:id="@+id/BookmarksFragment"
+        android:name="com.rbarlow.csc306.BookmarkFragment"
+        android:label="@string/bookmark_fragment_label"
+        tools:layout="@layout/fragment_second"></fragment>
+    <fragment
+        android:id="@+id/BlogFragment"
+        android:name="com.rbarlow.csc306.BlogFragment"
+        android:label="@string/bookmark_fragment_label"></fragment>
+</navigation>

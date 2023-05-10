@@ -1,0 +1,6 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.CSC306.Dark" parent="Base.Theme.CSC306"/>
+
+    <style name="Theme.CSC306.Dark" parent="Base.Theme.CSC306.Dark" />
+
+</resources>
