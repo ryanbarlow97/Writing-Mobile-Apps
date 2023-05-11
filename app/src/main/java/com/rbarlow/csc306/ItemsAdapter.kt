@@ -8,40 +8,39 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-
-class ItemsAdapter(private var items: MutableList<Item>) :
+class ItemsAdapter(items: List<Item>, private val isWideLayout: Boolean) :
     RecyclerView.Adapter<ItemsAdapter.ViewHolder>() {
 
-
+    private val mutableItems: MutableList<Item> = items.toMutableList()
     private lateinit var context: Context
-    private lateinit var listener: CategoriesAdapter.OnItemClickListener
+    private var listener: CategoriesAdapter.OnItemClickListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_layout, parent, false)
+        val layoutResId = if (isWideLayout) R.layout.item_layout_wide else R.layout.item_layout
+        val view = LayoutInflater.from(parent.context).inflate(layoutResId, parent, false)
         context = parent.context
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = items[position]
+        val item = mutableItems[position]
         holder.bind(item, listener)
     }
 
-    override fun getItemCount(): Int = items.size
+    override fun getItemCount(): Int = mutableItems.size
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
         private val titleTextView: TextView = view.findViewById(R.id.item_title)
         private val imageView: ImageView = view.findViewById(R.id.featured_item_image)
 
-        fun bind(item: Item, listener: CategoriesAdapter.OnItemClickListener) {
+        fun bind(item: Item, listener: CategoriesAdapter.OnItemClickListener?) {
             titleTextView.text = item.title
             imageView.setImageResource(item.imageResourceId)
 
             // Set OnClickListener for the item view
             itemView.setOnClickListener {
-                listener.onItemClick(item)
+                listener?.onItemClick(item)
             }
         }
     }
@@ -52,9 +51,8 @@ class ItemsAdapter(private var items: MutableList<Item>) :
     }
 
     fun updateItems(newItems: List<Item>) {
-        items.clear()
-        items.addAll(newItems)
+        mutableItems.clear()
+        mutableItems.addAll(newItems)
         notifyDataSetChanged()
     }
-
 }

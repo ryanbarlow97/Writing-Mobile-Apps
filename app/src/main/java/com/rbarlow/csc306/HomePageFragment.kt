@@ -5,15 +5,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.rbarlow.csc306.databinding.FragmentHomePageBinding
 
-/**
- * A simple [Fragment] subclass as the default destination in the navigation.
- */
 class HomePageFragment : Fragment() {
 
     private var _binding: FragmentHomePageBinding? = null
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     private lateinit var binding: FragmentHomePageBinding
 
@@ -36,6 +35,8 @@ class HomePageFragment : Fragment() {
             false
         )
         binding.recyclerHomePage.adapter = adapter
+        sharedViewModel.items.value = getDummyItems()
+
     }
 
 

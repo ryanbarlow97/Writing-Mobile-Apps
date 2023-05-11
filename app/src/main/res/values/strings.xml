@@ -8,6 +8,7 @@
     <string name="bookmark_fragment_label">Bookmark Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <string name="search_hint">Search items</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris

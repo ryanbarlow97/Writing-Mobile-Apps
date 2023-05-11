@@ -35,7 +35,7 @@ class CategoriesAdapter(private val categories: List<Category>) :
         fun bind(category: Category) {
             titleTextView.text = category.title
 
-            val adapter = ItemsAdapter(category.items)
+            val adapter = ItemsAdapter(category.items, false)
             recyclerView.layoutManager = LinearLayoutManager(
                 recyclerView.context,
                 LinearLayoutManager.HORIZONTAL,
