@@ -1,66 +1,58 @@
 package com.rbarlow.csc306
 
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class CategoriesAdapter(private val categories: List<Category>) :
+class CategoriesAdapter(var categories: List<Category>) :
     RecyclerView.Adapter<CategoriesAdapter.ViewHolder>() {
 
+    private lateinit var context: Context
+    private var listener: OnItemClickListener? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_category_layout, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_category_layout, parent, false)
+        context = parent.context
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val category = categories[position]
-        holder.bind(category)
+        holder.bind(category, listener)
     }
 
     override fun getItemCount(): Int = categories.size
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-        private val titleTextView: TextView = view.findViewById(R.id.category_title)
-        private val recyclerView: RecyclerView = view.findViewById(R.id.category_list)
+        private val categoryNameTextView: TextView = view.findViewById(R.id.category_title)
+        private val itemsRecyclerView: RecyclerView = view.findViewById(R.id.category_list)
 
-        fun bind(category: Category) {
-            titleTextView.text = category.title
+        fun bind(category: Category, listener: OnItemClickListener?) {
+            categoryNameTextView.text = category.title
 
-            val adapter = ItemsAdapter(category.items, false)
-            recyclerView.layoutManager = LinearLayoutManager(
-                recyclerView.context,
-                LinearLayoutManager.HORIZONTAL,
-                false
-            )
-            recyclerView.adapter = adapter
-
-            // Set the nested RecyclerView's height based on its content
-            recyclerView.isNestedScrollingEnabled = false
-            recyclerView.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
-
-            // Set OnClickListener for each item view in the ItemsAdapter
-            adapter.setOnItemClickListener(object : OnItemClickListener {
+            val itemsAdapter = ItemsAdapter(emptyList<Item>(), false)
+            itemsAdapter.setOnItemClickListener(object : ItemsAdapter.OnItemClickListener {
                 override fun onItemClick(item: Item) {
-                    val intent = Intent(itemView.context, ItemDetailsActivity::class.java)
-                    intent.putExtra("title", item.title)
-                    intent.putExtra("description", item.description)
-                    intent.putExtra("imageResource", item.imageResourceId)
-                    itemView.context.startActivity(intent)
+                    listener?.onItemClick(item)
                 }
             })
+
+            itemsRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            itemsRecyclerView.adapter = itemsAdapter
         }
     }
 
-    // Interface to handle click events on items in ItemsAdapter
+    // Function to set the OnItemClickListener for the adapter
+    fun setOnItemClickListener(listener: OnItemClickListener) {
+        this.listener = listener
+    }
+
+
     interface OnItemClickListener {
         fun onItemClick(item: Item)
     }

@@ -10,6 +10,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import java.util.*
 
 class CreateAccountActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -38,14 +39,14 @@ class CreateAccountActivity : AppCompatActivity() {
             val confirmPassword = confirmPasswordEditText.text.toString()
 
             if (password == confirmPassword) {
-                createAccount(email, password)
+                createAccount(email, password, "normal user")
             } else {
                 Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun createAccount(email: String, password: String) {
+    private fun createAccount(email: String, password: String, category: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
@@ -60,9 +61,16 @@ class CreateAccountActivity : AppCompatActivity() {
                     // Create a reference to the user's node using their UID
                     val userRef = database.getReference("users").child(user?.uid ?: "")
 
-                    // Set the role and email under the user's node
+                    // Set the role, email, and category under the user's node
                     userRef.child("role").setValue(userRole)
                     userRef.child("email").setValue(user?.email)
+
+                    val userCategoriesRef = userRef.child("user_categories")
+                    userCategoriesRef.child("new").setValue("New")
+                    userCategoriesRef.child("trending").setValue("Trending")
+                    userCategoriesRef.child("continue_viewing").setValue("Continue Viewing")
+                    userCategoriesRef.child("view_again").setValue("View Again")
+
                     // Log in the user
                     auth.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener { signInTask ->
@@ -91,4 +99,5 @@ class CreateAccountActivity : AppCompatActivity() {
                 }
             }
     }
+
 }

@@ -9,6 +9,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rbarlow.csc306.databinding.FragmentBlogBinding
 import com.rbarlow.csc306.databinding.FragmentBookmarkBinding
+import java.sql.Time
+import java.time.Instant
+import java.time.LocalDate
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -30,10 +33,9 @@ class BlogFragment : Fragment() {
 
         val blogRecyclerView: RecyclerView = view.findViewById(R.id.bookmark_recycler_view)
         blogRecyclerView.layoutManager = LinearLayoutManager(context)
-
+        //list of images (image)
         val items = listOf(
-            Item("Bookmark 1", "This is the description for Bookmark 1.", R.drawable.ibm5151),
-            Item("Bookmark 2", "This is the description for Bookmark 2.", R.drawable.ibm5151)
+            Item("Bookmark 1", "This is the description for Bookmark 1.", "https://firebasestorage.googleapis.com/v0/b/csc306b.appspot.com/o/images%2F9062ddfa-7c71-49e1-be80-90f16c0e7e41?alt=media&token=76441f01-8662-442e-9bf7-de405226acd2", Instant.now().toString(), "SysAdmin")
         )
 
         val adapter = BookmarkAdapter(items)

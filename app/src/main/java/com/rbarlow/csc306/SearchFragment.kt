@@ -48,7 +48,7 @@ class SearchFragment : Fragment() {
 
     private fun searchItems(query: String) {
         val filteredItems = items.filter { item ->
-            item.title.contains(query, ignoreCase = true)
+            item.name?.contains(query, ignoreCase = true) ?: false
         }
         adapter.updateItems(filteredItems.toMutableList())
     }

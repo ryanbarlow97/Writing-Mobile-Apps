@@ -20,7 +20,7 @@ class BookmarkAdapter(private val items: List<Item>) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
-        holder.titleTextView.text = item.title
+        holder.titleTextView.text = item.name
     }
 
     override fun getItemCount() = items.size

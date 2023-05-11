@@ -1,7 +1,9 @@
 package com.rbarlow.csc306
 
 data class Item(
-    val title: String,
-    val description: String,
-    val imageResourceId: Int
+    var name: String,
+    var description: String,
+    var image: String,
+    var addedOn : String,
+    var addedBy : String,
 )

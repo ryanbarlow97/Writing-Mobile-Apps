@@ -45,8 +45,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.rbarlow.csc306.CreateAccountActivity"
+            android:name=".CreateAccountActivity"
             android:label="Create Account" />
+
+        <activity android:name=".AddItemActivity"
+            android:label="Add Item" />
 
     </application>
 </manifest>
