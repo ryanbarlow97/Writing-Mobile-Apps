@@ -11,62 +11,66 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import com.rbarlow.csc306.databinding.FragmentHomePageBinding
+
 class HomePageFragment : Fragment() {
 
-    private lateinit var binding: FragmentHomePageBinding
     private val sharedViewModel: SharedViewModel by activityViewModels()
-
     private lateinit var userReference: DatabaseReference
     private lateinit var userListener: ValueEventListener
     private var currentUser: FirebaseUser? = null
+    private var currentUserRole: String? = null
+    private var _binding: FragmentHomePageBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentHomePageBinding.inflate(inflater, container, false)
+        _binding = FragmentHomePageBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val username = arguments?.getString("username")
+        binding.userNameTextView.text = username
+
         val adapter = CategoriesAdapter(getDummyCategory())
-        binding.recyclerHomePage.layoutManager = LinearLayoutManager(
-            requireContext(),
-            LinearLayoutManager.VERTICAL,
-            false
-        )
+        binding.recyclerHomePage.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerHomePage.adapter = adapter
         sharedViewModel.items.value = getDummyItems()
 
         currentUser = FirebaseAuth.getInstance().currentUser
-        userReference = FirebaseDatabase.getInstance().reference.child("users")
-            .child(currentUser?.uid ?: "")
 
-        userListener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val userName = snapshot.child("name").getValue(String::class.java)
-                // Update the user name in the activity
-                if (userName != null) {
-                    (requireActivity() as? MainActivity)?.updateUserName(userName)
+        userReference =
+            FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app").reference.child(
+                "users"
+            )
+                .child(currentUser?.uid ?: "")
+
+
+        userReference.child("role").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    val userRole = dataSnapshot.value.toString()
+                    binding.userNameTextView.text = userRole
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle database error
+                TODO("Not yet implemented")
             }
-        }
-
-        userReference.addValueEventListener(userListener)
+        })
     }
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()
-        userReference.removeEventListener(userListener)
+        _binding = null
     }
-
     private fun getDummyCategory(): List<Category> {
         val trendingItems = getDummyItems()
         val recommendedItems = getDummyItems()
@@ -81,11 +85,6 @@ class HomePageFragment : Fragment() {
             Category("View Again", viewAgainItems),
             )
     }
-
-    interface UserNameListener {
-        fun updateUserName(userName: String)
-    }
-
     private fun getDummyItems(): List<Item> {
         // Return a list of dummy recommended items
         return listOf(

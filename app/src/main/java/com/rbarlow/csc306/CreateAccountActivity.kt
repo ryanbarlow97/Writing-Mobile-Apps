@@ -67,9 +67,9 @@ class CreateAccountActivity : AppCompatActivity() {
                     auth.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener { signInTask ->
                             if (signInTask.isSuccessful) {
-
-                                // User login successful, proceed to the homepage
-                                val intent = Intent(this, MainActivity::class.java)
+                                val intent = Intent(this, MainActivity::class.java).apply {
+                                    putExtra("username", auth.currentUser?.email ?: "")
+                                }
                                 startActivity(intent)
                                 finish()
                             } else {

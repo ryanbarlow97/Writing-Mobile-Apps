@@ -9,7 +9,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.color.DynamicColors
 import com.google.firebase.database.DatabaseReference
 
-class MainActivity : AppCompatActivity(), HomePageFragment.UserNameListener {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var userNameTextView: TextView
@@ -68,9 +68,6 @@ class MainActivity : AppCompatActivity(), HomePageFragment.UserNameListener {
                 else -> false
             }
         }
-    }
-    override fun updateUserName(userName: String) {
-        userNameTextView.text = userName
     }
 }
 
