@@ -5,7 +5,11 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 
 class CreateAccountActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -17,6 +21,8 @@ class CreateAccountActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
+
         setContentView(R.layout.activity_create_account)
 
         auth = FirebaseAuth.getInstance()
@@ -42,14 +48,26 @@ class CreateAccountActivity : AppCompatActivity() {
     private fun createAccount(email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    // Account creation successful, display a success message
-                    Toast.makeText(this, "Account created successfully", Toast.LENGTH_SHORT).show()
-                    finish()
-                } else {
-                    // Account creation failed, display an error message
-                    Toast.makeText(this, "Account creation failed. Please try again.", Toast.LENGTH_SHORT).show()
-                }
+            if (task.isSuccessful) {
+                // Account creation successful, display a success message
+                Toast.makeText(this, "Account created successfully", Toast.LENGTH_SHORT).show()
+                val user = FirebaseAuth.getInstance().currentUser
+                val database = Firebase.database("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
+
+                val userRole = "normal user" // or "curator"
+
+                // Create a reference to the user's node using their UID
+                val userRef = database.getReference("users").child(user?.uid ?: "")
+
+                // Set the role and email under the user's node
+                userRef.child("role").setValue(userRole)
+                userRef.child("email").setValue(user?.email)
+
+                finish()
+            } else {
+                // Account creation failed, display an error message
+                Toast.makeText(this, "Account creation failed. Please try again.", Toast.LENGTH_SHORT).show()
             }
+        }
     }
 }
