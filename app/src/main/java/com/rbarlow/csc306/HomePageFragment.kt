@@ -7,14 +7,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.*
 import com.rbarlow.csc306.databinding.FragmentHomePageBinding
-
 class HomePageFragment : Fragment() {
 
-    private var _binding: FragmentHomePageBinding? = null
+    private lateinit var binding: FragmentHomePageBinding
     private val sharedViewModel: SharedViewModel by activityViewModels()
 
-    private lateinit var binding: FragmentHomePageBinding
+    private lateinit var userReference: DatabaseReference
+    private lateinit var userListener: ValueEventListener
+    private var currentUser: FirebaseUser? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,12 +41,30 @@ class HomePageFragment : Fragment() {
         binding.recyclerHomePage.adapter = adapter
         sharedViewModel.items.value = getDummyItems()
 
-    }
+        currentUser = FirebaseAuth.getInstance().currentUser
+        userReference = FirebaseDatabase.getInstance().reference.child("users")
+            .child(currentUser?.uid ?: "")
 
+        userListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val userName = snapshot.child("name").getValue(String::class.java)
+                // Update the user name in the activity
+                if (userName != null) {
+                    (requireActivity() as? MainActivity)?.updateUserName(userName)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle database error
+            }
+        }
+
+        userReference.addValueEventListener(userListener)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        userReference.removeEventListener(userListener)
     }
 
     private fun getDummyCategory(): List<Category> {
@@ -58,6 +80,10 @@ class HomePageFragment : Fragment() {
             Category("Continue Viewing", continueViewingItems),
             Category("View Again", viewAgainItems),
             )
+    }
+
+    interface UserNameListener {
+        fun updateUserName(userName: String)
     }
 
     private fun getDummyItems(): List<Item> {

@@ -1,22 +1,24 @@
 package com.rbarlow.csc306
 
 import android.os.Bundle
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.color.DynamicColors
+import com.google.firebase.database.DatabaseReference
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), HomePageFragment.UserNameListener {
 
     private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var userNameTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         DynamicColors.applyIfAvailable(this)
         setContentView(R.layout.activity_main)
-
 
 
         bottomNavigationView = findViewById(R.id.navigation)
@@ -66,6 +68,9 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+    override fun updateUserName(userName: String) {
+        userNameTextView.text = userName
     }
 }
 

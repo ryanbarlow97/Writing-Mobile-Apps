@@ -1,5 +1,6 @@
 package com.rbarlow.csc306
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -7,7 +8,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
@@ -48,26 +48,47 @@ class CreateAccountActivity : AppCompatActivity() {
     private fun createAccount(email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
-            if (task.isSuccessful) {
-                // Account creation successful, display a success message
-                Toast.makeText(this, "Account created successfully", Toast.LENGTH_SHORT).show()
-                val user = FirebaseAuth.getInstance().currentUser
-                val database = Firebase.database("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
+                if (task.isSuccessful) {
+                    // Account creation successful, display a success message
+                    Toast.makeText(this, "Account created successfully", Toast.LENGTH_SHORT).show()
+                    val user = FirebaseAuth.getInstance().currentUser
+                    val database =
+                        Firebase.database("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
 
-                val userRole = "normal user" // or "curator"
+                    val userRole = "normal user" // or "curator"
 
-                // Create a reference to the user's node using their UID
-                val userRef = database.getReference("users").child(user?.uid ?: "")
+                    // Create a reference to the user's node using their UID
+                    val userRef = database.getReference("users").child(user?.uid ?: "")
 
-                // Set the role and email under the user's node
-                userRef.child("role").setValue(userRole)
-                userRef.child("email").setValue(user?.email)
+                    // Set the role and email under the user's node
+                    userRef.child("role").setValue(userRole)
+                    userRef.child("email").setValue(user?.email)
+                    // Log in the user
+                    auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { signInTask ->
+                            if (signInTask.isSuccessful) {
 
-                finish()
-            } else {
-                // Account creation failed, display an error message
-                Toast.makeText(this, "Account creation failed. Please try again.", Toast.LENGTH_SHORT).show()
+                                // User login successful, proceed to the homepage
+                                val intent = Intent(this, MainActivity::class.java)
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                // User login failed, display an error message
+                                Toast.makeText(
+                                    this,
+                                    "Login failed. Please try again.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                } else {
+                    // Account creation failed, display an error message
+                    Toast.makeText(
+                        this,
+                        "Account creation failed. Please try again.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
-        }
     }
 }
