@@ -33,14 +33,6 @@ class MainActivity : AppCompatActivity() {
 
                     true
                 }
-                R.id.navigation_exhibition_map -> {
-
-                    val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-                    val navController = navHostFragment.findNavController()
-                    navController.navigate(R.id.SecondFragment)
-
-                    true
-                }
                 R.id.navigation_search -> {
 
                     val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment

@@ -19,8 +19,3 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
-
--keepclassmembers class com.rbarlow.csc306.Item { <init>(); }
--keepclassmembers class * {
-  @com.google.firebase.database.* <fields>;
-}

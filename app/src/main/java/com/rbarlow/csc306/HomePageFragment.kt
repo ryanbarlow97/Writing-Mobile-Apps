@@ -1,6 +1,6 @@
 package com.rbarlow.csc306
 
-import FirebaseRepository
+import com.rbarlow.csc306.FirebaseRepository
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log

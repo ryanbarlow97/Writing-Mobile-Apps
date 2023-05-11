@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 
 
-class ItemsAdapter(items: List<Item>, private val isWideLayout: Boolean) :
+class ItemsAdapter(private var items: List<Item>, private val isWideLayout: Boolean) :
     RecyclerView.Adapter<ItemsAdapter.ViewHolder>() {
 
     private val mutableItems: MutableList<Item> = items.toMutableList()
@@ -59,6 +59,7 @@ class ItemsAdapter(items: List<Item>, private val isWideLayout: Boolean) :
     fun setOnItemClickListener(listener: OnItemClickListener) {
         this.listener = listener
     }
+
 
     fun updateItems(newItems: List<Item>) {
         mutableItems.clear()

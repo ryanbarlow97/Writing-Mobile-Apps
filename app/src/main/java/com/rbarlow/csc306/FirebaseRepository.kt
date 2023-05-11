@@ -1,33 +1,14 @@
+package com.rbarlow.csc306
+
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.database.*
-import com.rbarlow.csc306.Category
-import com.rbarlow.csc306.Item
 
 class FirebaseRepository {
 
     private val firebaseInstance =
         FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
 
-
-    fun getItem(itemId: String): MutableLiveData<Item?> {
-        val liveData = MutableLiveData<Item?>()
-
-        firebaseInstance.reference.child("items").child(itemId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val item = dataSnapshot.getValue(Item::class.java)
-                    liveData.value = item
-                }
-
-                override fun onCancelled(databaseError: DatabaseError) {
-                    Log.e("Firebase", "Could not retrieve item", databaseError.toException())
-                }
-            })
-
-        return liveData
-    }
 
     //returns a string of the users role, either curator or user
     fun getUserRole(userId: String): MutableLiveData<String?> {
@@ -73,5 +54,32 @@ class FirebaseRepository {
         return liveData
     }
 
+    fun getAllItems(): MutableLiveData<List<Item>> {
+        val liveData = MutableLiveData<List<Item>>()
+
+        firebaseInstance.reference.child("items")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val items = mutableListOf<Item>()
+                    for (itemSnapshot in dataSnapshot.children) {
+                        val name = itemSnapshot.child("name").getValue(String::class.java)
+                        val description = itemSnapshot.child("description").getValue(String::class.java)
+                        val image = itemSnapshot.child("image").getValue(String::class.java)
+
+                        if (name != null && description != null && image != null) {
+                            val item = Item(name, description, image, addedBy = "admin", addedOn = "today")
+                            items.add(item)
+                        }
+                    }
+                    liveData.value = items
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Could not retrieve items", databaseError.toException())
+                }
+            })
+
+        return liveData
+    }
 
 }

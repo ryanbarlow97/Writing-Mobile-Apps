@@ -9,48 +9,51 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.activityViewModels
 
 class SearchFragment : Fragment() {
 
-    private lateinit var items: List<Item>
+    private var allItems: List<Item> = emptyList() // Store all items
     private lateinit var searchInput: EditText
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ItemsAdapter
-    private val sharedViewModel: SharedViewModel by activityViewModels()
+    private val firebaseRepository = FirebaseRepository()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_search, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        items = sharedViewModel.items.value ?: emptyList()
-
-        // Initialize the RecyclerView and its adapter
         recyclerView = view.findViewById(R.id.search_results_recycler_view)
-        adapter = ItemsAdapter(items, true)
+        adapter = ItemsAdapter(emptyList(), true)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        // Initialize the search input and add a listener for text changes
         searchInput = view.findViewById(R.id.search_input)
-        searchInput.addTextChangedListener {
-            searchItems(it.toString())
+        searchInput.addTextChangedListener { text ->
+            val searchString = text.toString().trim()
+            if (searchString.isNotEmpty()) {
+                val filteredItems = filterItems(searchString)
+                adapter.updateItems(filteredItems)
+            } else {
+                adapter.updateItems(allItems)
+            }
         }
+        firebaseRepository.getAllItems().observe(viewLifecycleOwner) { items ->
+            allItems = items
+            println(allItems)
+            adapter.updateItems(items)
+        }
+
     }
 
-
-    private fun searchItems(query: String) {
-        val filteredItems = items.filter { item ->
-            item.name?.contains(query, ignoreCase = true) ?: false
+    private fun filterItems(searchString: String): List<Item> {
+        return allItems.filter { item ->
+            item.name.contains(searchString, ignoreCase = true)
         }
-        adapter.updateItems(filteredItems.toMutableList())
     }
-
 }
