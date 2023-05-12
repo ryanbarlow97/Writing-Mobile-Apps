@@ -8,10 +8,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rbarlow.csc306.databinding.FragmentBlogBinding
-import com.rbarlow.csc306.databinding.FragmentBookmarkBinding
-import java.sql.Time
-import java.time.Instant
-import java.time.LocalDate
+
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.

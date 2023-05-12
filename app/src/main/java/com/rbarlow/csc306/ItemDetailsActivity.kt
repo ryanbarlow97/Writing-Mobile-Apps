@@ -15,6 +15,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -47,6 +48,13 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
                 descriptionTextView.text = item.description
 
+                // Update the upload_info TextView
+                val uploadInfoTextView = findViewById<TextView>(R.id.upload_info)
+                val uploadDate = Date(item.addedOn) // Assuming item has uploadTimestamp field
+                val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+                uploadInfoTextView.text = "Uploaded by ${item.addedBy} on ${formatter.format(uploadDate)}" // Assuming item has uploader field
+
+
                 val imageView = findViewById<ImageView>(R.id.item_image)
                 Glide.with(this)
                     .load(item.image)
@@ -55,9 +63,6 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                     .into(imageView)
             }
         }
-
-
-
 
         val toolBar = findViewById<MaterialToolbar>(R.id.toolBar)
 
