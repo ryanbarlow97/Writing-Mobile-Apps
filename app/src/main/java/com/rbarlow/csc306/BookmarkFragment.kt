@@ -1,47 +1,60 @@
 package com.rbarlow.csc306
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.rbarlow.csc306.databinding.FragmentBookmarkBinding
-import java.time.Instant
 
-/**
- * A simple [Fragment] subclass as the second destination in the navigation.
- */
 class BookmarkFragment : Fragment() {
 
     private var _binding: FragmentBookmarkBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
+    private lateinit var firebaseRepository: FirebaseRepository
+    private lateinit var currentUser: FirebaseUser
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_bookmark, container, false)
+        _binding = FragmentBookmarkBinding.inflate(inflater, container, false)
 
-        val bookmarkRecyclerView: RecyclerView = view.findViewById(R.id.bookmark_recycler_view)
+        val bookmarkRecyclerView: RecyclerView = binding.bookmarkRecyclerView
         bookmarkRecyclerView.layoutManager = LinearLayoutManager(context)
 
-        val items = listOf(
-            Item("Bookmark 1", "This is the description for Bookmark 1.", "https://firebasestorage.googleapis.com/v0/b/csc306b.appspot.com/o/images%2F9062ddfa-7c71-49e1-be80-90f16c0e7e41?alt=media&token=76441f01-8662-442e-9bf7-de405226acd2", System.currentTimeMillis(), "SysAdmin")
-        )
+        val progressBar: ProgressBar = binding.bookmarkProgressBar
+        val emptyView: TextView = binding.bookmarkEmptyView
+        progressBar.visibility = View.VISIBLE
 
-        val adapter = BookmarkAdapter(items)
-        bookmarkRecyclerView.adapter = adapter
+        firebaseRepository = FirebaseRepository()
+        currentUser = FirebaseAuth.getInstance().currentUser!!
 
-        return view
+        bookmarkRecyclerView.adapter = BookmarkAdapter(emptyList())
+
+        firebaseRepository.getBookmarkedItems(currentUser).observe(viewLifecycleOwner) { items ->
+            progressBar.visibility = View.GONE
+            if (items.isEmpty()) {
+                emptyView.visibility = View.VISIBLE
+                println("empty")
+            } else {
+                emptyView.visibility = View.GONE
+                println("not empty")
+            }
+
+            val adapter = BookmarkAdapter(items)
+            bookmarkRecyclerView.adapter = adapter
+        }
+
+        return binding.root
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()

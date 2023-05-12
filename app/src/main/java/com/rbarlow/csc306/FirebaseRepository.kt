@@ -2,6 +2,7 @@ package com.rbarlow.csc306
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 
 class FirebaseRepository {
@@ -62,14 +63,15 @@ class FirebaseRepository {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val items = mutableListOf<Item>()
                     for (itemSnapshot in dataSnapshot.children) {
+                        val itemId = itemSnapshot.key
                         val name = itemSnapshot.child("name").getValue(String::class.java)
                         val description = itemSnapshot.child("description").getValue(String::class.java)
                         val image = itemSnapshot.child("image").getValue(String::class.java)
                         val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
                         val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
 
-                        if (name != null && description != null && image != null && addedBy != null && addedOn != null) {
-                            val item = Item(name, description, image, addedOn, addedBy)
+                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null) {
+                            val item = Item(itemId, name, description, image, addedOn, addedBy)
                             items.add(item)
                         }
                     }
@@ -92,13 +94,14 @@ class FirebaseRepository {
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     for (itemSnapshot in dataSnapshot.children) {
+                        val itemId = itemSnapshot.key
                         val name = itemSnapshot.child("name").getValue(String::class.java)
                         val description = itemSnapshot.child("description").getValue(String::class.java)
                         val image = itemSnapshot.child("image").getValue(String::class.java)
                         val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
                         val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
-                        if (name != null && description != null && image != null && addedBy != null && addedOn != null) {
-                            val item = Item(name, description, image, addedOn, addedBy)
+                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null) {
+                            val item = Item(itemId, name, description, image, addedOn, addedBy)
                             liveData.value = item
                         }
                     }
@@ -109,4 +112,87 @@ class FirebaseRepository {
             })
         return liveData
     }
+
+    //bookmark items for the user
+    fun bookmarkItem(user: FirebaseUser, itemId: String) {
+        val userBookmarksRef = firebaseInstance.reference.child("users").child(user.uid).child("bookmarks")
+
+        userBookmarksRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if (dataSnapshot.hasChild(itemId)) {
+                    // Item is already bookmarked, remove the bookmark
+                    userBookmarksRef.child(itemId).removeValue()
+                } else {
+                    // Item is not bookmarked, add the bookmark
+                    userBookmarksRef.child(itemId).setValue(true)
+                    userBookmarksRef.child(itemId).child("addedOn").setValue(ServerValue.TIMESTAMP)
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("Firebase", "Could not update bookmarks", databaseError.toException())
+            }
+        })
+    }
+
+    //get all the items that the user has bookmarked
+    fun getBookmarkedItems(user: FirebaseUser): MutableLiveData<List<Item>> {
+        val liveData = MutableLiveData<List<Item>>()
+
+        val userBookmarksRef = firebaseInstance.reference.child("users").child(user.uid).child("bookmarks")
+        userBookmarksRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val items = mutableListOf<Item>()
+                for (itemSnapshot in dataSnapshot.children) {
+                    val itemId = itemSnapshot.key
+                    val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
+                    if (itemId != null && addedOn != null) {
+                        firebaseInstance.reference.child("items").child(itemId)
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                    val name = dataSnapshot.child("name").getValue(String::class.java)
+                                    val description = dataSnapshot.child("description").getValue(String::class.java)
+                                    val image = dataSnapshot.child("image").getValue(String::class.java)
+                                    val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
+                                    if (name != null && description != null && image != null && addedBy != null) {
+                                        val item = Item(itemId, name, description, image, addedOn, addedBy)
+                                        items.add(item)
+                                        liveData.value = items
+                                    }
+                                }
+
+                                override fun onCancelled(databaseError: DatabaseError) {
+                                    Log.e("Firebase", "Could not retrieve bookmarked items", databaseError.toException())
+                                }
+                            })
+                    }
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("Firebase", "Could not retrieve bookmarked items", databaseError.toException())
+            }
+        })
+
+        return liveData
+    }
+
+
+    fun isItemBookmarked(user: FirebaseUser, itemId: String): MutableLiveData<Boolean> {
+        val liveData = MutableLiveData<Boolean>()
+
+        val userBookmarksRef = firebaseInstance.reference.child("users").child(user.uid).child("bookmarks")
+        userBookmarksRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                liveData.value = dataSnapshot.hasChild(itemId)
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("Firebase", "Could not check if item is bookmarked", databaseError.toException())
+            }
+        })
+
+        return liveData
+    }
+
 }

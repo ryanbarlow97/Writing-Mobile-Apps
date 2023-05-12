@@ -9,15 +9,16 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.view.View
+import android.widget.ImageButton
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,6 +29,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var textToSpeech: TextToSpeech
     private val utteranceId = "descriptionUtterance"
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_item)
@@ -36,11 +38,36 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         // Create an instance of FirebaseRepository
         val firebaseRepository = FirebaseRepository()
+        val currentUser = FirebaseAuth.getInstance().currentUser
+
+        val bookmarkButton = findViewById<ImageButton>(R.id.bookmarksButton)
+
+        if (currentUser != null) {
+            bookmarkButton.visibility = View.VISIBLE
+        } else {
+            bookmarkButton.visibility = View.GONE
+        }
 
         // Observe the LiveData using the lifecycle of this activity
         val descriptionTextView = findViewById<TextView>(R.id.description)
 
         val itemName = intent.getStringExtra("itemName")
+
+
+
+        bookmarkButton.setOnClickListener {
+            if (currentUser != null && itemName != null) {
+                firebaseRepository.getItem(itemName).observe(this) { item: Item ->
+                    // Toggle the bookmark for the current user
+                    firebaseRepository.bookmarkItem(currentUser, item.id)
+
+                    // Update the bookmark icon
+                    firebaseRepository.isItemBookmarked(currentUser, item.id).observe(this) { isBookmarked ->
+                        updateBookmarkIcon(!isBookmarked)
+                    }
+                }
+            }
+        }
 
 
         if (itemName != null) {
@@ -51,7 +78,12 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
                 val toolBar = findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
                 toolBar.title = item.name
-                toolBar.setExpandedTitleColor(ContextCompat.getColor(this, android.R.color.transparent))
+                toolBar.setExpandedTitleColor(
+                    ContextCompat.getColor(
+                        this,
+                        android.R.color.transparent
+                    )
+                )
 
 
                 descriptionTextView.text = item.description
@@ -60,7 +92,8 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 val uploadInfoTextView = findViewById<TextView>(R.id.upload_info)
                 val uploadDate = Date(item.addedOn)
                 val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
-                uploadInfoTextView.text = "Uploaded by ${item.addedBy} on ${formatter.format(uploadDate)}"
+                uploadInfoTextView.text =
+                    "Uploaded by ${item.addedBy} on ${formatter.format(uploadDate)}"
 
 
                 val imageView = findViewById<ImageView>(R.id.image)
@@ -69,8 +102,16 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                     .override(1024)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(imageView)
+
+                if (currentUser != null) {
+                    firebaseRepository.isItemBookmarked(currentUser, item.id)
+                        .observe(this) { isBookmarked ->
+                            updateBookmarkIcon(isBookmarked)
+                        }
+                }
             }
         }
+
 
         val toolBar = findViewById<MaterialToolbar>(R.id.toolbar)
 
@@ -142,6 +183,15 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
         }
         handler.post(runnable)
+    }
+
+    private fun updateBookmarkIcon(isBookmarked: Boolean) {
+        val bookmarksButton = findViewById<ImageButton>(R.id.bookmarksButton)
+        if (isBookmarked) {
+            bookmarksButton.setImageResource(R.drawable.ic_heart_filled_24px)
+        } else {
+            bookmarksButton.setImageResource(R.drawable.ic_heart_24px)
+        }
     }
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {

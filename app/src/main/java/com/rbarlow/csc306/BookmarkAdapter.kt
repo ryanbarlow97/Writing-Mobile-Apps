@@ -5,23 +5,33 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import java.text.SimpleDateFormat
+import java.util.Locale
 
-class BookmarkAdapter(private val items: List<Item>) :
+class BookmarkAdapter(private val dataSet: List<Item>) :
     RecyclerView.Adapter<BookmarkAdapter.ViewHolder>() {
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val titleTextView: TextView = itemView.findViewById(R.id.item_title)
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val titleTextView: TextView = view.findViewById(R.id.bookmark_title)
+        val descriptionTextView: TextView = view.findViewById(R.id.bookmark_description)
+        val timestampTextView: TextView = view.findViewById(R.id.bookmark_timestamp)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_bookmark, parent, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = items[position]
-        holder.titleTextView.text = item.name
+        holder.titleTextView.text = dataSet[position].name
+        holder.descriptionTextView.text = dataSet[position].description
+
+        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+        val timestamp = formatter.format(dataSet[position].addedOn)
+        holder.timestampTextView.text = "Bookmarked on: $timestamp"
     }
 
-    override fun getItemCount() = items.size
+    override fun getItemCount() = dataSet.size
+
 }
