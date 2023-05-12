@@ -86,6 +86,18 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
                 //add a view
                 firebaseRepository.addViewToItem(item.id)
+
+                if (currentUser != null) {
+                    firebaseRepository.hasUserViewedItem(currentUser, item.id)
+                        .observe(this) { hasViewed ->
+                            if (hasViewed) {
+                                // The user has viewed the item before
+                                firebaseRepository.userViewedItem(currentUser, item.id)
+                            } else {
+                                firebaseRepository.userViewedItem(currentUser, item.id)
+                            }
+                        }
+                }
             }
         }
 
@@ -113,6 +125,13 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 }
                 else -> false
             }
+        }
+
+        if (currentUser == null) {
+            // Hide the bookmark button
+            val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+            val bookmarksButton = toolbar.menu.findItem(R.id.bookmarksButton)
+            bookmarksButton.isVisible = false
         }
 
         // Set the OnClickListener to toggle the button appearance and play/stop the audio

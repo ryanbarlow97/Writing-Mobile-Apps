@@ -1,6 +1,7 @@
 package com.rbarlow.csc306
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,16 +9,15 @@ import android.widget.TextView
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
 
-class CategoriesAdapter(var categories: List<Category>, private val lifecycleOwner: LifecycleOwner)
+class CategoriesAdapter(var categories: List<Category>, private val lifecycleOwner: LifecycleOwner, private val context: Context)
     : RecyclerView.Adapter<CategoriesAdapter.ViewHolder>() {
 
-    private lateinit var context: Context
     private var listener: OnItemClickListener? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_category_layout, parent, false)
-        context = parent.context
         return ViewHolder(view)
     }
 
@@ -56,20 +56,28 @@ class CategoriesAdapter(var categories: List<Category>, private val lifecycleOwn
                 FirebaseRepository().getMostViewedItems().observe(lifecycleOwner) { hotItems ->
                     itemsAdapter.updateItems(hotItems)
                 }
+            } else if (category.title == "Viewed") {
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                if (currentUser != null) {
+                    FirebaseRepository().getUserViewedItems(currentUser).observe(lifecycleOwner) { viewedItems ->
+                        //show in reverse order
+                        itemsAdapter.updateItems(viewedItems.reversed())
+                    }
+                } else {
+                    //remove the Viewed category if the user is not logged in
+                    categories = categories.filter { it.title != "Viewed" }
+                }
             }
+
+            itemsAdapter.setOnItemClickListener(object : ItemsAdapter.OnItemClickListener {
+                override fun onItemClick(item: Item) {
+                    val intent = Intent(context, ItemDetailsActivity::class.java)
+                    intent.putExtra("id", item.id)
+                    context.startActivity(intent)
+                }
+            })
         }
     }
-
-
-
-
-
-
-    // Function to set the OnItemClickListener for the adapter
-    fun setOnItemClickListener(listener: OnItemClickListener) {
-        this.listener = listener
-    }
-
 
     interface OnItemClickListener {
         fun onItemClick(item: Item)

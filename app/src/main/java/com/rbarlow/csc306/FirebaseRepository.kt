@@ -302,6 +302,86 @@ class FirebaseRepository {
                 }
             })
     }
+    //user has viewed the item
+    fun userViewedItem(user: FirebaseUser, itemId: String) {
+        val userViewedItemsRef = firebaseInstance.reference.child("users").child(user.uid).child("viewedItems")
+        userViewedItemsRef.child(itemId).setValue(true)
+        userViewedItemsRef.child(itemId).child("viewedOn").setValue(ServerValue.TIMESTAMP)
+    }
 
+    //get the items that the user has viewed
+    fun hasUserViewedItem(user: FirebaseUser, itemId: String): MutableLiveData<Boolean> {
+        val liveData = MutableLiveData<Boolean>()
 
+        val userViewedItemsRef = firebaseInstance.reference.child("users").child(user.uid).child("viewedItems")
+        userViewedItemsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                liveData.value = dataSnapshot.hasChild(itemId)
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("Firebase", "Could not check if user has viewed item", databaseError.toException())
+            }
+        })
+
+        return liveData
+    }
+
+    //get list of items that the user has viewed
+    fun getUserViewedItems(user: FirebaseUser): MutableLiveData<List<Item>> {
+        val liveData = MutableLiveData<List<Item>>()
+
+        val userViewedItemsRef = firebaseInstance.reference.child("users").child(user.uid).child("viewedItems")
+        userViewedItemsRef.orderByChild("viewedOn").limitToLast(6)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val items = mutableListOf<Item>()
+                    val itemCount = dataSnapshot.childrenCount
+                    if (itemCount == 0L) {
+                        liveData.value = items
+                    } else {
+                        var processedItems = 0L
+                        for (itemSnapshot in dataSnapshot.children) {
+                            val itemId = itemSnapshot.key
+                            if (itemId != null) {
+                                firebaseInstance.reference.child("items").child(itemId)
+                                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                            val name = dataSnapshot.child("name").getValue(String::class.java)
+                                            val description = dataSnapshot.child("description").getValue(String::class.java)
+                                            val image = dataSnapshot.child("image").getValue(String::class.java)
+                                            val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
+                                            val addedOn = dataSnapshot.child("addedOn").getValue(Long::class.java)
+                                            val views = dataSnapshot.child("views").getValue(Int::class.java)
+                                            if (name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
+                                                val item = Item(itemId, name, description, image, addedOn, addedBy, views)
+                                                items.add(item)
+                                            }
+                                            processedItems++
+                                            if (processedItems == itemCount) {
+                                                liveData.value = items
+                                            }
+                                        }
+
+                                        override fun onCancelled(databaseError: DatabaseError) {
+                                            Log.e("Firebase", "Could not retrieve viewed items", databaseError.toException())
+                                        }
+                                    })
+                            } else {
+                                processedItems++
+                                if (processedItems == itemCount) {
+                                    liveData.value = items
+                                }
+                            }
+                        }
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Could not retrieve viewed items", databaseError.toException())
+                }
+            })
+
+        return liveData
+    }
 }
