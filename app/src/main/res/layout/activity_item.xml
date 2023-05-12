@@ -16,12 +16,12 @@
                     android:id="@+id/collapsing_toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    app:layout_scrollFlags="scroll|exitUntilCollapsed"
-                    app:contentScrim="?attr/colorPrimary"
-                    app:expandedTitleMarginStart="16dp"
-                    app:expandedTitleMarginEnd="64dp"
                     app:collapsedTitleTextColor="@android:color/white"
-                    app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Title">
+                    app:contentScrim="?attr/colorPrimary"
+                    app:expandedTitleMarginEnd="64dp"
+                    app:expandedTitleMarginStart="16dp"
+                    app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Title"
+                    app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
                         <ImageView
                             android:id="@+id/image"
@@ -35,25 +35,11 @@
                             android:id="@+id/toolbar"
                             android:layout_width="match_parent"
                             android:layout_height="?attr/actionBarSize"
-                            app:navigationIcon="@drawable/ic_close_24px"
                             app:layout_collapseMode="pin"
-                            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" >
+                            app:navigationIcon="@drawable/ic_close_24px"
+                            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light"
+                            app:menu="@menu/main_top_bar">
 
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="end"
-                                    android:orientation="horizontal">
-
-                                        <ImageButton
-                                            android:id="@+id/bookmarksButton"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="match_parent"
-                                            android:layout_marginTop="2dp"
-                                            android:layout_marginEnd="16dp"
-                                            android:background="?attr/selectableItemBackgroundBorderless"
-                                            android:src="@drawable/ic_heart_24px" />
-                                </LinearLayout>
 
                         </com.google.android.material.appbar.MaterialToolbar>
 

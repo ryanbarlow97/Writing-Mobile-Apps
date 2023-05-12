@@ -40,33 +40,12 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         val firebaseRepository = FirebaseRepository()
         val currentUser = FirebaseAuth.getInstance().currentUser
 
-        val bookmarkButton = findViewById<ImageButton>(R.id.bookmarksButton)
-
-        if (currentUser != null) {
-            bookmarkButton.visibility = View.VISIBLE
-        } else {
-            bookmarkButton.visibility = View.GONE
-        }
 
         // Observe the LiveData using the lifecycle of this activity
         val descriptionTextView = findViewById<TextView>(R.id.description)
 
         val itemId = intent.getStringExtra("id")
 
-
-        bookmarkButton.setOnClickListener {
-            if (currentUser != null && itemId != null) {
-                firebaseRepository.getItem(itemId).observe(this) { item: Item ->
-                    // Toggle the bookmark for the current user
-                    firebaseRepository.bookmarkItem(currentUser, item.id)
-
-                    // Update the bookmark icon
-                    firebaseRepository.isItemBookmarked(currentUser, item.id).observe(this) { isBookmarked ->
-                        updateBookmarkIcon(!isBookmarked)
-                    }
-                }
-            }
-        }
 
         if (itemId != null) {
             firebaseRepository.getItem(itemId).observe(this) { item: Item ->
@@ -79,7 +58,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 //set toolbar title
                 val toolBar = findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
                 toolBar.title = item.name
-                toolBar.setExpandedTitleColor(ContextCompat.getColor(this, android.R.color.white))
+                toolBar.setExpandedTitleColor(ContextCompat.getColor(this, android.R.color.transparent))
 
                 //set description
                 descriptionTextView.text = item.description
@@ -108,10 +87,31 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
 
         //set toolbar
-        val toolBar2 = findViewById<MaterialToolbar>(R.id.toolbar)
-        toolBar2.setNavigationOnClickListener {
+        val toolBar = findViewById<MaterialToolbar>(R.id.toolbar)
+        toolBar.setNavigationOnClickListener {
             finish()
         }
+
+        toolBar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.bookmarksButton -> {
+                    if (currentUser != null && itemId != null) {
+                        firebaseRepository.getItem(itemId).observe(this) { item: Item ->
+                            // Toggle the bookmark for the current user
+                            firebaseRepository.bookmarkItem(currentUser, item.id)
+
+                            // Update the bookmark icon
+                            firebaseRepository.isItemBookmarked(currentUser, item.id).observe(this) { isBookmarked ->
+                                updateBookmarkIcon(!isBookmarked)
+                            }
+                        }
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+
         // Set the OnClickListener to toggle the button appearance and play/stop the audio
         val audioButton = findViewById<FloatingActionButton>(R.id.fab)
 
@@ -181,11 +181,12 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun updateBookmarkIcon(isBookmarked: Boolean) {
-        val bookmarksButton = findViewById<ImageButton>(R.id.bookmarksButton)
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        val bookmarksButton = toolbar.menu.findItem(R.id.bookmarksButton)
         if (isBookmarked) {
-            bookmarksButton.setImageResource(R.drawable.ic_heart_filled_24px)
+            bookmarksButton.setIcon(R.drawable.ic_heart_filled_24px)
         } else {
-            bookmarksButton.setImageResource(R.drawable.ic_heart_24px)
+            bookmarksButton.setIcon(R.drawable.ic_heart_24px)
         }
     }
     override fun onInit(status: Int) {
