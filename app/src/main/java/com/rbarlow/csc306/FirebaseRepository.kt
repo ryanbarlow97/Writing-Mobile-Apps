@@ -65,9 +65,11 @@ class FirebaseRepository {
                         val name = itemSnapshot.child("name").getValue(String::class.java)
                         val description = itemSnapshot.child("description").getValue(String::class.java)
                         val image = itemSnapshot.child("image").getValue(String::class.java)
+                        val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
+                        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
 
-                        if (name != null && description != null && image != null) {
-                            val item = Item(name, description, image, addedBy = "admin", addedOn = "today")
+                        if (name != null && description != null && image != null && addedBy != null && addedOn != null) {
+                            val item = Item(name, description, image, addedOn, addedBy)
                             items.add(item)
                         }
                     }
@@ -94,10 +96,9 @@ class FirebaseRepository {
                         val description = itemSnapshot.child("description").getValue(String::class.java)
                         val image = itemSnapshot.child("image").getValue(String::class.java)
                         val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
-                        val addedOn = itemSnapshot.child("addedOn").getValue(String::class.java)
-                        println("name: $name, description: $description, image: $image, addedBy: $addedBy, addedOn: $addedOn")
+                        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
                         if (name != null && description != null && image != null && addedBy != null && addedOn != null) {
-                            val item = Item(name, description, image, addedBy, addedOn)
+                            val item = Item(name, description, image, addedOn, addedBy)
                             liveData.value = item
                         }
                     }

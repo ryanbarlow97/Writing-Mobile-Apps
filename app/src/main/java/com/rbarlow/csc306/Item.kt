@@ -4,6 +4,6 @@ data class Item(
     var name: String,
     var description: String,
     var image: String,
-    var addedOn : String,
+    var addedOn : Long,
     var addedBy : String,
 )

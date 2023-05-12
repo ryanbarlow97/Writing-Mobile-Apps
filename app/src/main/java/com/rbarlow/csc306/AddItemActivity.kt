@@ -10,6 +10,8 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
@@ -87,16 +89,21 @@ class AddItemActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.data != null) {
+        if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
+            && data != null && data.data != null) {
             filePath = data.data
             try {
-                val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, filePath)
-                imageView.setImageBitmap(bitmap)
+                Glide.with(this)
+                    .load(filePath)
+                    .override(1024) // resize the image
+                    .centerCrop() // or fitCenter()
+                    .into(imageView)
             } catch (e: IOException) {
                 e.printStackTrace()
             }
         }
     }
+
     private fun createNewItem(name: String, description: String, imageUrl: String) {
         val itemKey = itemsReference.push().key // this will create a unique key for the new item
 
@@ -104,7 +111,9 @@ class AddItemActivity : AppCompatActivity() {
             val item = mapOf(
                 "name" to name,
                 "description" to description,
-                "image" to imageUrl
+                "image" to imageUrl,
+                "addedBy" to (FirebaseAuth.getInstance().currentUser?.email ?: ""),
+                "addedOn" to System.currentTimeMillis()
             )
 
             itemsReference.child(itemKey).setValue(item).addOnCompleteListener { task ->

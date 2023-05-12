@@ -50,6 +50,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 val imageView = findViewById<ImageView>(R.id.item_image)
                 Glide.with(this)
                     .load(item.image)
+                    .override(1024)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(imageView)
             }
