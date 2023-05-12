@@ -56,7 +56,6 @@ class SearchFragment : Fragment() {
         }
         firebaseRepository.getAllItems().observe(viewLifecycleOwner) { items ->
             allItems = items
-            println("All items: $items")
             adapter.updateItems(items)
         }
 

@@ -35,80 +35,90 @@
 
         </com.google.android.material.appbar.AppBarLayout>
 
-        <ImageView
-            android:id="@+id/item_image"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="250dp"
-            android:layout_margin="4dp"
-            android:scaleType="fitCenter" />
+            android:layout_height="match_parent"
+            android:layout_margin="8dp"
+            android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/item_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:scaleType="fitCenter" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:orientation="vertical">
+
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:id="@+id/item_title"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+
+                                    android:text="Historical Object"
+                                    android:textColor="?attr/colorOnBackground"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold" />
+
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:id="@+id/upload_info"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="Uploaded by user on 12/05/2023"
+                                    android:textColor="?attr/colorOnBackground"
+                                    android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/audioImage"
+                            style="@style/Widget.MaterialComponents.Button.Icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:padding="12dp"
+                            android:textAlignment="viewStart"
+                            app:icon="@drawable/ic_play"
+                            app:iconGravity="textStart"
+                            app:iconPadding="0dp"
+                            app:iconSize="36dp"
+                            app:iconTint="?attr/colorOnBackground"
+                            tools:ignore="SpeakableTextPresentCheck" />
+
+                </LinearLayout>
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:paddingTop="16dp">
+
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/item_description"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:justificationMode="inter_word"
+                            android:text="Historical Description"
+                            android:textColor="?attr/colorOnBackground"
+                            android:textSize="14sp" />
+
+                </ScrollView>
+
+        </LinearLayout>
 
 
         <!-- Featured item -->
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/item_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:text="Historical Object"
-                    android:layout_weight="1"
-
-                    android:textColor="?attr/colorOnBackground"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/audioImage"
-                    style="@style/Widget.MaterialComponents.Button.Icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:padding="12dp"
-                    android:textAlignment="viewStart"
-                    app:icon="@drawable/ic_play"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="36dp"
-                    app:iconTint="?attr/colorOnBackground"
-                    tools:ignore="SpeakableTextPresentCheck" />
-
-        </LinearLayout>
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/upload_info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Uploaded by user on 12/05/2023"
-            android:textColor="?attr/colorOnBackground"
-            android:textSize="12sp" />
-
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/item_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="32dp"
-            android:text="Historical Description"
-            android:textColor="?attr/colorOnBackground"
-            android:textSize="14sp" />
-
-        </ScrollView>
 
 </LinearLayout>
 
