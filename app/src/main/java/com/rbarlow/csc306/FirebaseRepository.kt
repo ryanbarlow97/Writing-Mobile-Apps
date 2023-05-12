@@ -81,5 +81,31 @@ class FirebaseRepository {
 
         return liveData
     }
+    fun getItem(itemName: String): MutableLiveData<Item> {
+        val liveData = MutableLiveData<Item>()
 
+        firebaseInstance.reference.child("items")
+            .orderByChild("name")
+            .equalTo(itemName)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    for (itemSnapshot in dataSnapshot.children) {
+                        val name = itemSnapshot.child("name").getValue(String::class.java)
+                        val description = itemSnapshot.child("description").getValue(String::class.java)
+                        val image = itemSnapshot.child("image").getValue(String::class.java)
+                        val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
+                        val addedOn = itemSnapshot.child("addedOn").getValue(String::class.java)
+                        println("name: $name, description: $description, image: $image, addedBy: $addedBy, addedOn: $addedOn")
+                        if (name != null && description != null && image != null && addedBy != null && addedOn != null) {
+                            val item = Item(name, description, image, addedBy, addedOn)
+                            liveData.value = item
+                        }
+                    }
+                }
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Could not retrieve item", databaseError.toException())
+                }
+            })
+        return liveData
+    }
 }

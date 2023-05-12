@@ -13,7 +13,10 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import java.util.*
+
 
 class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private var isPlaying = false
@@ -27,20 +30,34 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         textToSpeech = TextToSpeech(this, this)
 
-        // Retrieve the data from the intent
-        val title = intent.getStringExtra("title")
-        val description = intent.getStringExtra("description")
-        val imageResource = intent.getIntExtra("imageResource", 0)
+        // Create an instance of FirebaseRepository
+        val firebaseRepository = FirebaseRepository()
 
-        // Set the data to the views
-        val titleTextView = findViewById<TextView>(R.id.item_title)
-        titleTextView.text = title
+        // Observe the LiveData using the lifecycle of this activity
         val descriptionTextView = findViewById<TextView>(R.id.item_description)
-        descriptionTextView.text = description
-        val imageImageView = findViewById<ImageView>(R.id.item_image)
-        imageResource?.let {
-            imageImageView.setImageResource(it.toInt())
+
+        val itemName = intent.getStringExtra("itemName")
+
+
+        if (itemName != null) {
+            firebaseRepository.getItem(itemName).observe(this) { item: Item ->
+                // Update the UI
+                val titleTextView = findViewById<TextView>(R.id.item_title)
+                titleTextView.text = item.name
+
+                descriptionTextView.text = item.description
+
+                val imageView = findViewById<ImageView>(R.id.item_image)
+                Glide.with(this)
+                    .load(item.image)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(imageView)
+            }
         }
+
+
+
+
         val toolBar = findViewById<MaterialToolbar>(R.id.toolBar)
 
         toolBar.setNavigationOnClickListener {

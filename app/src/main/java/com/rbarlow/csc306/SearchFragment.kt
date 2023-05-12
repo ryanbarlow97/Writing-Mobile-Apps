@@ -1,5 +1,6 @@
 package com.rbarlow.csc306
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -28,10 +29,20 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize the RecyclerView and its adapter
         recyclerView = view.findViewById(R.id.search_results_recycler_view)
         adapter = ItemsAdapter(emptyList(), true)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        adapter.setOnItemClickListener(object : ItemsAdapter.OnItemClickListener {
+            override fun onItemClick(item: Item) {
+                val intent = Intent(requireContext(), ItemDetailsActivity::class.java)
+                intent.putExtra("itemName", item.name)
+                startActivity(intent)
+            }
+        })
+
 
         searchInput = view.findViewById(R.id.search_input)
         searchInput.addTextChangedListener { text ->
@@ -45,7 +56,6 @@ class SearchFragment : Fragment() {
         }
         firebaseRepository.getAllItems().observe(viewLifecycleOwner) { items ->
             allItems = items
-            println(allItems)
             adapter.updateItems(items)
         }
 
