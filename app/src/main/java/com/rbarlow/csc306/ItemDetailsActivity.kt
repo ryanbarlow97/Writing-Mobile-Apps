@@ -51,13 +51,12 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         // Observe the LiveData using the lifecycle of this activity
         val descriptionTextView = findViewById<TextView>(R.id.description)
 
-        val itemName = intent.getStringExtra("itemName")
-
+        val itemId = intent.getStringExtra("id")
 
 
         bookmarkButton.setOnClickListener {
-            if (currentUser != null && itemName != null) {
-                firebaseRepository.getItem(itemName).observe(this) { item: Item ->
+            if (currentUser != null && itemId != null) {
+                firebaseRepository.getItem(itemId).observe(this) { item: Item ->
                     // Toggle the bookmark for the current user
                     firebaseRepository.bookmarkItem(currentUser, item.id)
 
@@ -69,33 +68,29 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
         }
 
+        if (itemId != null) {
+            firebaseRepository.getItem(itemId).observe(this) { item: Item ->
 
-        if (itemName != null) {
-            firebaseRepository.getItem(itemName).observe(this) { item: Item ->
-                // Update the UI
+                //set title
                 val titleTextView = findViewById<TextView>(R.id.title)
                 titleTextView.text = item.name
 
+
+                //set toolbar title
                 val toolBar = findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
                 toolBar.title = item.name
-                toolBar.setExpandedTitleColor(
-                    ContextCompat.getColor(
-                        this,
-                        android.R.color.transparent
-                    )
-                )
+                toolBar.setExpandedTitleColor(ContextCompat.getColor(this, android.R.color.white))
 
-
+                //set description
                 descriptionTextView.text = item.description
 
                 // Update the upload_info TextView
                 val uploadInfoTextView = findViewById<TextView>(R.id.upload_info)
                 val uploadDate = Date(item.addedOn)
                 val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
-                uploadInfoTextView.text =
-                    "Uploaded by ${item.addedBy} on ${formatter.format(uploadDate)}"
+                uploadInfoTextView.text ="Uploaded by ${item.addedBy} on ${formatter.format(uploadDate)}"
 
-
+                //set image
                 val imageView = findViewById<ImageView>(R.id.image)
                 Glide.with(this)
                     .load(item.image)
@@ -103,20 +98,18 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(imageView)
 
+                // Update the bookmark icon based on the current user's bookmark status
                 if (currentUser != null) {
                     firebaseRepository.isItemBookmarked(currentUser, item.id)
                         .observe(this) { isBookmarked ->
-                            updateBookmarkIcon(isBookmarked)
-                        }
+                            updateBookmarkIcon(isBookmarked) }
                 }
             }
         }
 
-
-        val toolBar = findViewById<MaterialToolbar>(R.id.toolbar)
-
-
-        toolBar.setNavigationOnClickListener {
+        //set toolbar
+        val toolBar2 = findViewById<MaterialToolbar>(R.id.toolbar)
+        toolBar2.setNavigationOnClickListener {
             finish()
         }
         // Set the OnClickListener to toggle the button appearance and play/stop the audio
@@ -125,11 +118,15 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         // Get a reference to the progress bar
         progressBar = findViewById(R.id.progress_indicator)
 
+        // Set the UtteranceProgressListener to update the progress bar as the text is being spoken
         textToSpeech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
-                // Not used in this case
+                runOnUiThread {
+                    progressBar.progress = 0
+                }
             }
 
+            // Update the progress bar as the text is being spoken
             override fun onDone(utteranceId: String) {
                 runOnUiThread {
                     progressBar.progress = 0
@@ -139,13 +136,11 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
 
             override fun onError(utteranceId: String) {
-                // Handle errors if needed
+                Log.e("TTS", "Error while trying to speak the description")
             }
         })
 
-
-
-
+        // Set the OnClickListener to toggle the button appearance and play/stop the audio
         audioButton.setOnClickListener {
             if (isPlaying) {
                 // Stop playing the audio

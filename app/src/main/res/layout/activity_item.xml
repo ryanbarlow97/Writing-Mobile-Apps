@@ -16,11 +16,12 @@
                     android:id="@+id/collapsing_toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:fitsSystemWindows="true"
+                    app:layout_scrollFlags="scroll|exitUntilCollapsed"
                     app:contentScrim="?attr/colorPrimary"
+                    app:expandedTitleMarginStart="16dp"
                     app:expandedTitleMarginEnd="64dp"
-                    app:expandedTitleMarginStart="48dp"
-                    app:layout_scrollFlags="scroll|exitUntilCollapsed">
+                    app:collapsedTitleTextColor="@android:color/white"
+                    app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Title">
 
                         <ImageView
                             android:id="@+id/image"

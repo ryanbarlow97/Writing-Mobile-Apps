@@ -40,7 +40,7 @@ class HomePageFragment : Fragment() {
         binding.recyclerHomePage.adapter = adapter
 
         // Get the categories from the database and update the adapter
-        firebaseRepository.getCategories(FirebaseAuth.getInstance().currentUser?.uid.toString()).observe(viewLifecycleOwner
+        firebaseRepository.getCategories().observe(viewLifecycleOwner
         ) { categories ->
             // Update the adapter or perform any other necessary actions with the categories
             if (categories != null) {

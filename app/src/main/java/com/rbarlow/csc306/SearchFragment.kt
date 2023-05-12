@@ -38,7 +38,7 @@ class SearchFragment : Fragment() {
         adapter.setOnItemClickListener(object : ItemsAdapter.OnItemClickListener {
             override fun onItemClick(item: Item) {
                 val intent = Intent(requireContext(), ItemDetailsActivity::class.java)
-                intent.putExtra("itemName", item.name)
+                intent.putExtra("id", item.id)
                 startActivity(intent)
             }
         })

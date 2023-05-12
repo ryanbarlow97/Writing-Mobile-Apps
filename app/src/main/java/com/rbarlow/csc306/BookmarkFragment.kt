@@ -43,10 +43,8 @@ class BookmarkFragment : Fragment() {
             progressBar.visibility = View.GONE
             if (items.isEmpty()) {
                 emptyView.visibility = View.VISIBLE
-                println("empty")
             } else {
                 emptyView.visibility = View.GONE
-                println("not empty")
             }
 
             val adapter = BookmarkAdapter(items)

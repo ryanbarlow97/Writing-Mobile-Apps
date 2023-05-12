@@ -32,10 +32,10 @@ class FirebaseRepository {
     }
 
     //get all the categories for the user to see
-    fun getCategories(userId: String): MutableLiveData<List<Category>> {
+    fun getCategories(): MutableLiveData<List<Category>> {
         val liveData = MutableLiveData<List<Category>>()
 
-        firebaseInstance.reference.child("users").child(userId).child("user_categories")
+        firebaseInstance.reference.child("categories")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val categories = mutableListOf<Category>()
@@ -86,31 +86,30 @@ class FirebaseRepository {
 
         return liveData
     }
-    fun getItem(itemName: String): MutableLiveData<Item> {
+    fun getItem(itemId: String): MutableLiveData<Item> {
         val liveData = MutableLiveData<Item>()
 
         firebaseInstance.reference.child("items")
-            .orderByChild("name")
-            .equalTo(itemName)
+            .child(itemId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    for (itemSnapshot in dataSnapshot.children) {
-                        val itemId = itemSnapshot.key
-                        val name = itemSnapshot.child("name").getValue(String::class.java)
-                        val description = itemSnapshot.child("description").getValue(String::class.java)
-                        val image = itemSnapshot.child("image").getValue(String::class.java)
-                        val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
-                        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
-                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null) {
-                            val item = Item(itemId, name, description, image, addedOn, addedBy)
-                            liveData.value = item
-                        }
+                    val itemId = dataSnapshot.key
+                    val name = dataSnapshot.child("name").getValue(String::class.java)
+                    val description = dataSnapshot.child("description").getValue(String::class.java)
+                    val image = dataSnapshot.child("image").getValue(String::class.java)
+                    val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
+                    val addedOn = dataSnapshot.child("addedOn").getValue(Long::class.java)
+                    if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null) {
+                        val item = Item(itemId, name, description, image, addedOn, addedBy)
+                        liveData.value = item
                     }
                 }
+
                 override fun onCancelled(databaseError: DatabaseError) {
                     Log.e("Firebase", "Could not retrieve item", databaseError.toException())
                 }
             })
+
         return liveData
     }
 
