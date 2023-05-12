@@ -7,6 +7,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.color.DynamicColors
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 
 class MainActivity : AppCompatActivity() {
@@ -22,6 +23,11 @@ class MainActivity : AppCompatActivity() {
 
 
         bottomNavigationView = findViewById(R.id.navigation)
+
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            val menuNav = bottomNavigationView.menu
+            menuNav.findItem(R.id.navigation_bookmarks).isVisible = false
+        }
 
         bottomNavigationView.setOnItemSelectedListener { menuItem ->
             when (menuItem.itemId) {

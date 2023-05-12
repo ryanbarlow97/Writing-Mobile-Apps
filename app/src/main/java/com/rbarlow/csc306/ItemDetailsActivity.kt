@@ -15,6 +15,9 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -35,7 +38,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         val firebaseRepository = FirebaseRepository()
 
         // Observe the LiveData using the lifecycle of this activity
-        val descriptionTextView = findViewById<TextView>(R.id.item_description)
+        val descriptionTextView = findViewById<TextView>(R.id.description)
 
         val itemName = intent.getStringExtra("itemName")
 
@@ -43,19 +46,24 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         if (itemName != null) {
             firebaseRepository.getItem(itemName).observe(this) { item: Item ->
                 // Update the UI
-                val titleTextView = findViewById<TextView>(R.id.item_title)
+                val titleTextView = findViewById<TextView>(R.id.title)
                 titleTextView.text = item.name
+
+                val toolBar = findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
+                toolBar.title = item.name
+                toolBar.setExpandedTitleColor(ContextCompat.getColor(this, android.R.color.transparent))
+
 
                 descriptionTextView.text = item.description
 
                 // Update the upload_info TextView
                 val uploadInfoTextView = findViewById<TextView>(R.id.upload_info)
-                val uploadDate = Date(item.addedOn) // Assuming item has uploadTimestamp field
+                val uploadDate = Date(item.addedOn)
                 val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
-                uploadInfoTextView.text = "Uploaded by ${item.addedBy} on ${formatter.format(uploadDate)}" // Assuming item has uploader field
+                uploadInfoTextView.text = "Uploaded by ${item.addedBy} on ${formatter.format(uploadDate)}"
 
 
-                val imageView = findViewById<ImageView>(R.id.item_image)
+                val imageView = findViewById<ImageView>(R.id.image)
                 Glide.with(this)
                     .load(item.image)
                     .override(1024)
@@ -64,13 +72,14 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
         }
 
-        val toolBar = findViewById<MaterialToolbar>(R.id.toolBar)
+        val toolBar = findViewById<MaterialToolbar>(R.id.toolbar)
+
 
         toolBar.setNavigationOnClickListener {
             finish()
         }
         // Set the OnClickListener to toggle the button appearance and play/stop the audio
-        val audioButton = findViewById<MaterialButton>(R.id.audioImage)
+        val audioButton = findViewById<FloatingActionButton>(R.id.fab)
 
         // Get a reference to the progress bar
         progressBar = findViewById(R.id.progress_indicator)
@@ -83,8 +92,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             override fun onDone(utteranceId: String) {
                 runOnUiThread {
                     progressBar.progress = 0
-                    audioButton.icon =
-                        ContextCompat.getDrawable(this@ItemDetailsActivity, R.drawable.ic_play)
+                    audioButton.setImageDrawable(ContextCompat.getDrawable(this@ItemDetailsActivity, R.drawable.ic_play))
                     isPlaying = false
                 }
             }
@@ -103,16 +111,14 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 textToSpeech.stop()
                 progressBar.progress = 0
                 isPlaying = false
-                audioButton.icon =
-                    ContextCompat.getDrawable(this@ItemDetailsActivity, R.drawable.ic_play)
+                audioButton.setImageDrawable(ContextCompat.getDrawable(this@ItemDetailsActivity, R.drawable.ic_play))
             } else {
                 // Start playing the audio
                 val description = descriptionTextView.text.toString()
                 textToSpeech.speak(description, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
 
                 isPlaying = true
-                audioButton.icon =
-                    ContextCompat.getDrawable(this@ItemDetailsActivity, R.drawable.ic_pause)
+                audioButton.setImageDrawable(ContextCompat.getDrawable(this@ItemDetailsActivity, R.drawable.ic_pause))
                 updateProgressBar()
             }
         }
@@ -120,7 +126,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private fun updateProgressBar() {
         val wordsPerMinute = 160
-        val words = findViewById<TextView>(R.id.item_description).text.split("\\s+".toRegex()).size
+        val words = findViewById<TextView>(R.id.description).text.split("\\s+".toRegex()).size
         val estimatedDuration = words * 60 * 1000 / wordsPerMinute
 
         progressBar.max = estimatedDuration

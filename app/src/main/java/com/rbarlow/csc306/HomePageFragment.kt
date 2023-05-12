@@ -28,7 +28,11 @@ class HomePageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.userNameTextView.text = FirebaseAuth.getInstance().currentUser?.email
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            binding.userNameTextView.text = "Not logged in"
+        } else {
+            binding.userNameTextView.text = FirebaseAuth.getInstance().currentUser?.email
+        }
 
         // Initialize the RecyclerView with an empty adapter
         val adapter = CategoriesAdapter(emptyList())

@@ -46,6 +46,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.guestLoginButton.setOnClickListener {
+            auth.signOut()
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         }
