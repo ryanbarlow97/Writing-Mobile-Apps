@@ -150,4 +150,18 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             Log.e("TTS", "Initialization failed")
         }
     }
+    override fun onStop() {
+        super.onStop()
+        if (textToSpeech.isSpeaking) {
+            textToSpeech.stop()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (textToSpeech != null) {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
+    }
 }
