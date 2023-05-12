@@ -32,7 +32,7 @@ class BlogFragment : Fragment() {
         blogRecyclerView.layoutManager = LinearLayoutManager(context)
         //list of images (image)
         val items = listOf(
-            Item("sss", "Bookmark 1", "This is the description for Bookmark 1.", "https://firebasestorage.googleapis.com/v0/b/csc306b.appspot.com/o/images%2F9062ddfa-7c71-49e1-be80-90f16c0e7e41?alt=media&token=76441f01-8662-442e-9bf7-de405226acd2", System.currentTimeMillis(), "SysAdmin")
+            Item("sss", "Bookmark 1", "This is the description for Bookmark 1.", "https://firebasestorage.googleapis.com/v0/b/csc306b.appspot.com/o/images%2F9062ddfa-7c71-49e1-be80-90f16c0e7e41?alt=media&token=76441f01-8662-442e-9bf7-de405226acd2", System.currentTimeMillis(), "SysAdmin", 0)
         )
 
 

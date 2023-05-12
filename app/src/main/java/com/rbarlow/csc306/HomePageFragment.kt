@@ -35,7 +35,7 @@ class HomePageFragment : Fragment() {
         }
 
         // Initialize the RecyclerView with an empty adapter
-        val adapter = CategoriesAdapter(emptyList())
+        val adapter = CategoriesAdapter(emptyList(), viewLifecycleOwner)
         binding.recyclerHomePage.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerHomePage.adapter = adapter
 

@@ -113,7 +113,8 @@ class AddItemActivity : AppCompatActivity() {
                 "description" to description,
                 "image" to imageUrl,
                 "addedBy" to (FirebaseAuth.getInstance().currentUser?.email ?: ""),
-                "addedOn" to System.currentTimeMillis()
+                "addedOn" to System.currentTimeMillis(),
+                "views" to 0,
             )
 
             itemsReference.child(itemKey).setValue(item).addOnCompleteListener { task ->

@@ -5,11 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class CategoriesAdapter(var categories: List<Category>) :
-    RecyclerView.Adapter<CategoriesAdapter.ViewHolder>() {
+class CategoriesAdapter(var categories: List<Category>, private val lifecycleOwner: LifecycleOwner)
+    : RecyclerView.Adapter<CategoriesAdapter.ViewHolder>() {
 
     private lateinit var context: Context
     private var listener: OnItemClickListener? = null
@@ -19,6 +20,7 @@ class CategoriesAdapter(var categories: List<Category>) :
         context = parent.context
         return ViewHolder(view)
     }
+
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val category = categories[position]
@@ -35,7 +37,7 @@ class CategoriesAdapter(var categories: List<Category>) :
         fun bind(category: Category, listener: OnItemClickListener?) {
             categoryNameTextView.text = category.title
 
-            val itemsAdapter = ItemsAdapter(emptyList<Item>(), false)
+            val itemsAdapter = ItemsAdapter(emptyList(), false)
             itemsAdapter.setOnItemClickListener(object : ItemsAdapter.OnItemClickListener {
                 override fun onItemClick(item: Item) {
                     listener?.onItemClick(item)
@@ -44,8 +46,24 @@ class CategoriesAdapter(var categories: List<Category>) :
 
             itemsRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             itemsRecyclerView.adapter = itemsAdapter
+
+            // Populate the items based on the category
+            if (category.title == "New") {
+                FirebaseRepository().getNewestItems().observe(lifecycleOwner) { newestItems ->
+                    itemsAdapter.updateItems(newestItems)
+                }
+            } else if (category.title == "Hot") {
+                FirebaseRepository().getMostViewedItems().observe(lifecycleOwner) { hotItems ->
+                    itemsAdapter.updateItems(hotItems)
+                }
+            }
         }
     }
+
+
+
+
+
 
     // Function to set the OnItemClickListener for the adapter
     fun setOnItemClickListener(listener: OnItemClickListener) {

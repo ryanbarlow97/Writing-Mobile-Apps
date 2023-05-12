@@ -7,4 +7,5 @@ data class Item(
     var image: String,
     var addedOn : Long,
     var addedBy : String,
+    var views : Int,
 )

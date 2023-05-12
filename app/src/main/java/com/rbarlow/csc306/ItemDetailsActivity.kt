@@ -83,6 +83,9 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                         .observe(this) { isBookmarked ->
                             updateBookmarkIcon(isBookmarked) }
                 }
+
+                //add a view
+                firebaseRepository.addViewToItem(item.id)
             }
         }
 

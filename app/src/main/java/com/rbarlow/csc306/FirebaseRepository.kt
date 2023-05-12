@@ -70,9 +70,10 @@ class FirebaseRepository {
                         val image = itemSnapshot.child("image").getValue(String::class.java)
                         val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
                         val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
+                        val views = itemSnapshot.child("views").getValue(Int::class.java)
 
-                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null) {
-                            val item = Item(itemId, name, description, image, addedOn, addedBy)
+                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
+                            val item = Item(itemId, name, description, image, addedOn, addedBy, views)
                             items.add(item)
                         }
                     }
@@ -93,14 +94,15 @@ class FirebaseRepository {
             .child(itemId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val itemId = dataSnapshot.key
+                    val itemId2 = dataSnapshot.key
                     val name = dataSnapshot.child("name").getValue(String::class.java)
                     val description = dataSnapshot.child("description").getValue(String::class.java)
                     val image = dataSnapshot.child("image").getValue(String::class.java)
                     val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
                     val addedOn = dataSnapshot.child("addedOn").getValue(Long::class.java)
-                    if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null) {
-                        val item = Item(itemId, name, description, image, addedOn, addedBy)
+                    val views = dataSnapshot.child("views").getValue(Int::class.java)
+                    if (itemId2 != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
+                        val item = Item(itemId2, name, description, image, addedOn, addedBy, views)
                         liveData.value = item
                     }
                 }
@@ -160,8 +162,9 @@ class FirebaseRepository {
                                         val description = fullDescription?.substring(0, min(fullDescription.length, 30)) + "..."
                                         val image = dataSnapshot.child("image").getValue(String::class.java)
                                         val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
-                                        if (name != null && description != null && image != null && addedBy != null) {
-                                            val item = Item(itemId, name, description, image, addedOn, addedBy)
+                                        val views = dataSnapshot.child("views").getValue(Int::class.java)
+                                        if (name != null && fullDescription != null && image != null && addedBy != null && addedOn != null && views != null) {
+                                            val item = Item(itemId, name, description, image, addedOn, addedBy , views)
                                             items.add(item)
                                         }
                                         processedItems++
@@ -209,5 +212,96 @@ class FirebaseRepository {
 
         return liveData
     }
+
+    fun getNewestItems(limit: Int = 6): MutableLiveData<List<Item>> {
+        val liveData = MutableLiveData<List<Item>>()
+
+        firebaseInstance.reference.child("items")
+            .orderByChild("addedOn")
+            .limitToLast(limit)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val items = mutableListOf<Item>()
+                    for (itemSnapshot in dataSnapshot.children) {
+                        val itemId = itemSnapshot.key
+                        val name = itemSnapshot.child("name").getValue(String::class.java)
+                        val description = itemSnapshot.child("description").getValue(String::class.java)
+                        val image = itemSnapshot.child("image").getValue(String::class.java)
+                        val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
+                        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
+                        val views = itemSnapshot.child("views").getValue(Int::class.java)
+
+                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
+                            val item = Item(itemId, name, description, image, addedOn, addedBy, views)
+                            items.add(item)
+                        }
+                    }
+                    items.sortByDescending { it.addedOn } // Sort items by addedOn in descending order
+                    liveData.value = items
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Could not retrieve newest items", databaseError.toException())
+                }
+            })
+
+        return liveData
+    }
+
+    //get the most viewed items
+    fun getMostViewedItems(limit: Int = 6): MutableLiveData<List<Item>> {
+        val liveData = MutableLiveData<List<Item>>()
+
+        firebaseInstance.reference.child("items")
+            .orderByChild("views")
+            .limitToLast(limit)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val items = mutableListOf<Item>()
+                    for (itemSnapshot in dataSnapshot.children) {
+                        val itemId = itemSnapshot.key
+                        val name = itemSnapshot.child("name").getValue(String::class.java)
+                        val description = itemSnapshot.child("description").getValue(String::class.java)
+                        val image = itemSnapshot.child("image").getValue(String::class.java)
+                        val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
+                        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
+                        val views = itemSnapshot.child("views").getValue(Int::class.java)
+
+                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
+                            val item = Item(itemId, name, description, image, addedOn, addedBy, views)
+                            items.add(item)
+                        }
+                    }
+                    items.sortByDescending { it.views } // Sort items by views in descending order
+                    liveData.value = items
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Could not retrieve most viewed items", databaseError.toException())
+                }
+            })
+
+        return liveData
+    }
+    //add a view to an item
+    fun addViewToItem(itemId: String) {
+        firebaseInstance.reference.child("items").child(itemId).child("views")
+            .runTransaction(object : Transaction.Handler {
+                override fun doTransaction(mutableData: MutableData): Transaction.Result {
+                    val views = mutableData.getValue(Int::class.java)
+                    if (views != null) {
+                        mutableData.value = views + 1
+                    }
+                    return Transaction.success(mutableData)
+                }
+
+                override fun onComplete(databaseError: DatabaseError?, b: Boolean, dataSnapshot: DataSnapshot?) {
+                    if (databaseError != null) {
+                        Log.e("Firebase", "Could not increment item views", databaseError.toException())
+                    }
+                }
+            })
+    }
+
 
 }
