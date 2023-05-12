@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp">
+    android:padding="8dp">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/search_input_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="@string/search_hint"
+        android:paddingBottom="4dp"
         app:boxBackgroundMode="outline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
