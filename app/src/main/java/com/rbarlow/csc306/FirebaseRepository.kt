@@ -484,4 +484,23 @@ class FirebaseRepository {
             }
     }
     //endregion
+
+
+    //region comments for blog posts
+    fun addCommentToBlogPost(blogPostId: String, commentContent: String, commentAuthor: String, onComplete: ((Boolean, String?) -> Unit)?) {
+        val commentKey = firebaseInstance.reference.child("blogPosts").child(blogPostId).child("comments").push().key // this will create a unique key for the new comment
+
+        if (commentKey != null) {
+            val comment = mapOf(
+                "content" to commentContent,
+                "author" to commentAuthor,
+                "addedOn" to System.currentTimeMillis()
+            )
+
+            firebaseInstance.reference.child("blogPosts").child(blogPostId).child("comments").child(commentKey).setValue(comment)
+                .addOnCompleteListener { task ->
+                    onComplete?.invoke(task.isSuccessful, task.exception?.message)
+                }
+        }
+    }
 }

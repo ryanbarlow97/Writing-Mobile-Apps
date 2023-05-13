@@ -13,19 +13,9 @@
         android:layout_height="wrap_content"
         android:text="Blog Post Title"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
-        android:textColor="@color/md_theme_dark_onBackground"
+        android:textColor="@color/md_theme_dark_scrim"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/blog_post_author"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Author"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        android:layout_marginTop="4dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/blog_post_title" />
 
     <TextView
         android:id="@+id/blog_post_timestamp"
@@ -33,9 +23,8 @@
         android:layout_height="wrap_content"
         android:text="Timestamp"
         android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        android:layout_marginTop="2dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/blog_post_author" />
+        app:layout_constraintTop_toBottomOf="@+id/blog_post_title" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/blog_post_scroll_view"
