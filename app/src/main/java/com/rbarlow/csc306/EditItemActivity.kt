@@ -37,7 +37,19 @@ class EditItemActivity : AppCompatActivity() {
 
     private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            processActivityResult(result.data)
+            val data: Intent? = result.data
+            if (data != null && data.data != null) {
+                filePath = data.data
+                try {
+                    Glide.with(this)
+                        .load(filePath)
+                        .override(1024) // resize the image
+                        .centerCrop() // or fitCenter()
+                        .into(imageView)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 
@@ -45,87 +57,72 @@ class EditItemActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_item)
 
-        initViews()
-        setupItemData()
-        setupOnClickListeners()
-    }
-
-    private fun initViews() {
+        // Initialize views
         editButton = findViewById(R.id.editButton)
         deleteButton = findViewById(R.id.deleteButton)
         chooseButton = findViewById(R.id.chooseButton)
         imageView = findViewById(R.id.imageView)
         itemNameEditText = findViewById(R.id.itemNameEditText)
         itemDescriptionEditText = findViewById(R.id.itemDescriptionEditText)
-    }
 
-    private fun setupItemData() {
+        //get the item info from the repository
         itemKey = intent.getStringExtra("id")
         firebaseRepository.getItem(itemKey.toString()).observe(this) { item: Item ->
-            displayItemData(item)
-        }
-    }
-
-    private fun displayItemData(item: Item) {
-        itemNameEditText.setText(item.name)
-        itemDescriptionEditText.setText(item.description)
-        imageUrl = item.image
-        Glide.with(this).load(imageUrl).into(imageView)
-    }
-
-    private fun setupOnClickListeners() {
-        editButton.setOnClickListener { editItem() }
-        deleteButton.setOnClickListener { showDeleteConfirmationDialog() }
-        chooseButton.setOnClickListener { openImagePicker() }
-    }
-
-    private fun processActivityResult(data: Intent?) {
-        if (data != null && data.data != null) {
-            filePath = data.data
-            displaySelectedImage()
-        }
-    }
-
-    private fun displaySelectedImage() {
-        try {
-            Glide.with(this)
-                .load(filePath)
-                .override(1024) // resize the image
-                .centerCrop() // or fitCenter()
-                .into(imageView)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun editItem() {
-        val name = itemNameEditText.text.toString()
-        val description = itemDescriptionEditText.text.toString()
-
-        if (name.isEmpty() || description.isEmpty()) {
-            showToast("Please fill in all fields and select an image")
-        } else {
-            if (filePath != null) {
-                uploadImageAndUpdateItem(name, description)
-            } else {
-                updateItem(name, description, imageUrl!!)
+            itemNameEditText.setText(item.name)
+            itemDescriptionEditText.setText(item.description)
+            imageUrl = item.image
+            if (imageUrl != null) {
+                Glide.with(this).load(imageUrl).into(imageView)
             }
         }
-    }
 
-    private fun uploadImageAndUpdateItem(name: String, description: String) {
-        val ref = storageReference.child("images/" + UUID.randomUUID().toString())
+        // Set OnClickListener for the edit button
+        editButton.setOnClickListener {
+            val name = itemNameEditText.text.toString()
+            val description = itemDescriptionEditText.text.toString()
 
-        ref.putFile(filePath!!)
-            .addOnSuccessListener {
-                ref.downloadUrl.addOnSuccessListener { uri ->
-                    val newImageUrl = uri.toString()
-                    updateItem(name, description, newImageUrl)
+            if (name.isEmpty() || description.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    "Please fill in all fields and select an image",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                if (filePath != null) {
+                    val ref = storageReference.child("images/" + UUID.randomUUID().toString())
+
+                    ref.putFile(filePath!!)
+                        .addOnSuccessListener {
+                            ref.downloadUrl.addOnSuccessListener { uri ->
+                                val newImageUrl = uri.toString()
+                                updateItem(name, description, newImageUrl)
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(
+                                this@EditItemActivity,
+                                "Failed " + e.message,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                } else {
+                    updateItem(name, description, imageUrl!!)
                 }
             }
-            .addOnFailureListener { e ->
-                showToast("Failed ${e.message}")
-            }
+        }
+
+        // Set OnClickListener for the delete button
+        deleteButton.setOnClickListener {
+            showDeleteConfirmationDialog()
+        }
+
+        // Set OnClickListener for the choose button
+        chooseButton.setOnClickListener {
+            val intent = Intent()
+            intent.type = "image/*"
+            intent.action = Intent.ACTION_GET_CONTENT
+            startForResult.launch(Intent.createChooser(intent, "Select Picture"))
+        }
     }
 
     private fun updateItem(name: String, description: String, imageUrl: String) {
@@ -138,11 +135,11 @@ class EditItemActivity : AppCompatActivity() {
 
             itemsReference.child(itemKey!!).updateChildren(itemUpdates).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    showToast("Item updated successfully")
-                    setResult(RESULT_OK)
+                    Toast.makeText(this, "Item updated successfully", Toast.LENGTH_SHORT).show()
+                    setResult(RESULT_OK) // Add this line to set the result
                     finish()
                 } else {
-                    showToast("Error: ${task.exception?.message}")
+                    Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -153,31 +150,23 @@ class EditItemActivity : AppCompatActivity() {
         builder.setTitle("Delete item")
         builder.setMessage("Are you sure you want to delete this item?")
 
-        builder.setPositiveButton("Yes") { _, _ -> deleteItem() }
+        builder.setPositiveButton("Yes") { _, _ ->
+            if (itemKey != null) {
+                firebaseRepository.deleteItemWithReferences(itemKey!!) { success, message ->
+                    if (success) {
+                        showToast("Item deleted successfully")
+                        setResult(RESULT_OK)
+                        finish()
+                    } else {
+                        showToast("Error: $message")
+                    }
+                }
+            }
+        }
         builder.setNegativeButton("No") { dialog, _ -> dialog.dismiss() }
 
         val alertDialog = builder.create()
         alertDialog.show()
-    }
-
-    private fun deleteItem() {
-        if (itemKey != null) {
-            itemsReference.child(itemKey!!).removeValue().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    showToast("Item deleted successfully")
-                    finish()
-                } else {
-                    showToast("Error: ${task.exception?.message}")
-                }
-            }
-        }
-    }
-
-    private fun openImagePicker() {
-        val intent = Intent()
-        intent.type = "image/*"
-        intent.action = Intent.ACTION_GET_CONTENT
-        startForResult.launch(Intent.createChooser(intent, "Select Picture"))
     }
 
     private fun showToast(message: String) {
