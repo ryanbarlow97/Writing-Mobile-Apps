@@ -5,5 +5,5 @@ data class BlogComment(
     val title: String,
     val content: String,
     val author: String,
-    val time: Long
+    val time: String
 )

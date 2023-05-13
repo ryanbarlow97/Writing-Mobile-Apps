@@ -5,5 +5,5 @@ data class BlogPost(
     val title: String,
     val content: String,
     val author: String,
-    val time: Long
+    var addedOn : Long,
 )
