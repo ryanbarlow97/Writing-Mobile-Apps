@@ -4,62 +4,61 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.progressindicator.LinearProgressIndicator
-import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
-import android.view.View
-import android.widget.ImageButton
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.firebase.auth.FirebaseAuth
-import com.rbarlow.csc306.databinding.FragmentHomePageBinding
+import com.google.firebase.auth.FirebaseUser
 import java.text.SimpleDateFormat
 import java.util.*
 
 
 class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
+
     private var isPlaying = false
     private lateinit var progressBar: LinearProgressIndicator
     private lateinit var textToSpeech: TextToSpeech
     private val utteranceId = "descriptionUtterance"
     private lateinit var editFab: FloatingActionButton
-    private var _binding: FragmentHomePageBinding? = null
-    private val binding get() = _binding!!
     private val firebaseRepository = FirebaseRepository()
 
     private val editItemLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            // if the edit was a success, reload the item details from the database to show the updated information
+            // If the edit was a success, reload the item details from the database to show the updated information
             val itemId = intent.getStringExtra("id")
             if (itemId != null) {
                 firebaseRepository.getItem(itemId).observe(this) { item: Item ->
-
-                    //set title
+                    // Set title
                     val titleTextView = findViewById<TextView>(R.id.title)
                     titleTextView.text = item.name
+
+                    // Set description
                     val descriptionTextView = findViewById<TextView>(R.id.description)
                     descriptionTextView.text = item.description
+
+                    // Set image
                     val image = findViewById<ImageView>(R.id.image)
                     Glide.with(this)
                         .load(item.image)
                         .override(1024)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(image)
-
                 }
             }
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_item)
@@ -68,63 +67,70 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         // Create an instance of FirebaseRepository
         val currentUser = FirebaseAuth.getInstance().currentUser
-
-
-        // Observe the LiveData using the lifecycle of this activity
         val descriptionTextView = findViewById<TextView>(R.id.description)
-
         val itemId = intent.getStringExtra("id")
 
+        setupItemDetails(currentUser, itemId)
+        setupToolBar(itemId)
+        setupEditFab(currentUser, itemId)
 
+        setupAudioButton(descriptionTextView)
+    }
+
+    private fun setupItemDetails(currentUser: FirebaseUser?, itemId: String?) {
         if (itemId != null) {
             firebaseRepository.getItem(itemId).observe(this) { item: Item ->
-
-                //set title
-                val titleTextView = findViewById<TextView>(R.id.title)
-                titleTextView.text = item.name
-
-
-                //set toolbar title
-                val toolBar = findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar)
-                toolBar.title = item.name
-                toolBar.setExpandedTitleColor(ContextCompat.getColor(this, android.R.color.transparent))
-
-                //set description
-                descriptionTextView.text = item.description
-
-                // Update the upload_info TextView
-                val uploadInfoTextView = findViewById<TextView>(R.id.upload_info)
-                val uploadDate = Date(item.addedOn)
-                val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
-                uploadInfoTextView.text ="Uploaded by ${item.addedBy} on ${formatter.format(uploadDate)}"
-
-                //set image
-                val imageView = findViewById<ImageView>(R.id.image)
-                Glide.with(this)
-                    .load(item.image)
-                    .override(1024)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(imageView)
+                // Set title, description, image, and upload info
+                setTitleAndDescription(item)
+                setImage(item)
+                setUploadInfo(item)
 
                 // Update the bookmark icon based on the current user's bookmark status
                 if (currentUser != null) {
                     firebaseRepository.isItemBookmarked(currentUser, item.id)
                         .observe(this) { isBookmarked ->
-                            updateBookmarkIcon(isBookmarked) }
+                            updateBookmarkIcon(isBookmarked)
+                        }
                 }
 
-                //add a view
+                // Add a view
                 firebaseRepository.addViewToItem(item.id)
 
                 if (currentUser != null) {
                     firebaseRepository.hasUserViewedItem(currentUser, item.id)
                         .observe(this) {
-                            firebaseRepository.userViewedItem(currentUser, item.id) }
+                            firebaseRepository.userViewedItem(currentUser, item.id)
+                        }
                 }
             }
         }
+    }
 
-        //set toolbar
+    private fun setTitleAndDescription(item: Item) {
+        val titleTextView = findViewById<TextView>(R.id.title)
+        titleTextView.text = item.name
+
+        val descriptionTextView = findViewById<TextView>(R.id.description)
+        descriptionTextView.text = item.description
+    }
+
+    private fun setImage(item: Item) {
+        val imageView = findViewById<ImageView>(R.id.image)
+        Glide.with(this)
+            .load(item.image)
+            .override(1024)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(imageView)
+    }
+
+    private fun setUploadInfo(item: Item) {
+        val uploadInfoTextView = findViewById<TextView>(R.id.upload_info)
+        val uploadDate = Date(item.addedOn)
+        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+        uploadInfoTextView.text = getString(R.string.upload_info, item.addedBy, formatter.format(uploadDate))
+    }
+
+    private fun setupToolBar(itemId: String?) {
         val toolBar = findViewById<MaterialToolbar>(R.id.toolbar)
         toolBar.setNavigationOnClickListener {
             finish()
@@ -133,6 +139,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         toolBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.bookmarksButton -> {
+                    val currentUser = FirebaseAuth.getInstance().currentUser
                     if (currentUser != null && itemId != null) {
                         firebaseRepository.getItem(itemId).observe(this) { item: Item ->
                             // Toggle the bookmark for the current user
@@ -149,21 +156,21 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 else -> false
             }
         }
+    }
 
-
+    private fun setupEditFab(currentUser: FirebaseUser?, itemId: String?) {
         editFab = findViewById(R.id.edit_fab)
-        //check if user is logged in, if so, show edit button
+        // Check if user is logged in, if so, show edit button
         if (currentUser != null) {
             editFab.isVisible = true
         }
 
-        //if user clicks the edit button, take them to the edit page
+        // If user clicks the edit button, take them to the edit page
         editFab.setOnClickListener {
             val intent = Intent(this, EditItemActivity::class.java)
             intent.putExtra("id", itemId)
             editItemLauncher.launch(intent) // Use editItemLauncher instead of startActivity()
         }
-
 
         if (currentUser == null) {
             // Hide the bookmark button
@@ -172,8 +179,9 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             bookmarksButton.isVisible = false
             editFab.isVisible = false
         }
+    }
 
-        // Set the OnClickListener to toggle the button appearance and play/stop the audio
+    private fun setupAudioButton(descriptionTextView: TextView) {
         val audioButton = findViewById<FloatingActionButton>(R.id.fab)
 
         // Get a reference to the progress bar
@@ -250,6 +258,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             bookmarksButton.setIcon(R.drawable.ic_heart_24px)
         }
     }
+
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             val result = textToSpeech.setLanguage(Locale.getDefault())
@@ -263,6 +272,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             Log.e("TTS", "Initialization failed")
         }
     }
+
     override fun onStop() {
         super.onStop()
         if (textToSpeech.isSpeaking) {
@@ -272,9 +282,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (textToSpeech != null) {
-            textToSpeech.stop()
-            textToSpeech.shutdown()
-        }
+        textToSpeech.stop()
+        textToSpeech.shutdown()
     }
 }

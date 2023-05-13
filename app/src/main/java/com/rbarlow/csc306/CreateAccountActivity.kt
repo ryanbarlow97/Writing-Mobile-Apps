@@ -10,7 +10,6 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import java.util.*
 
 class CreateAccountActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
@@ -26,13 +25,23 @@ class CreateAccountActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_create_account)
 
-        auth = FirebaseAuth.getInstance()
+        initFirebaseAuth()
+        initViews()
+        setCreateAccountButtonClickListener()
+    }
 
+    private fun initFirebaseAuth() {
+        auth = FirebaseAuth.getInstance()
+    }
+
+    private fun initViews() {
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         confirmPasswordEditText = findViewById(R.id.confirmPasswordEditText)
         createAccountButton = findViewById(R.id.createAccountButton)
+    }
 
+    private fun setCreateAccountButtonClickListener() {
         createAccountButton.setOnClickListener {
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
@@ -47,51 +56,58 @@ class CreateAccountActivity : AppCompatActivity() {
     }
 
     private fun createAccount(email: String, password: String, category: String) {
+        createUserWithEmailAndPassword(email, password) { uid, errorMessage ->
+            if (uid != null) {
+                saveUserDetailsToDatabase(uid, email, category)
+                loginUser(email, password)
+            } else {
+                showErrorMessage(errorMessage)
+            }
+        }
+    }
+
+    private fun createUserWithEmailAndPassword(
+        email: String, password: String,
+        callback: (uid: String?, errorMessage: String?) -> Unit
+    ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // Account creation successful, display a success message
-                    Toast.makeText(this, "Account created successfully", Toast.LENGTH_SHORT).show()
-                    val user = FirebaseAuth.getInstance().currentUser
-                    val database =
-                        Firebase.database("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
-
-                    val userRole = "normal user" // or "curator"
-
-                    // Create a reference to the user's node using their UID
-                    val userRef = database.getReference("users").child(user?.uid ?: "")
-
-                    // Set the role, email, and category under the user's node
-                    userRef.child("role").setValue(userRole)
-                    userRef.child("email").setValue(user?.email)
-
-                    // Log in the user
-                    auth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener { signInTask ->
-                            if (signInTask.isSuccessful) {
-                                val intent = Intent(this, MainActivity::class.java).apply {
-                                    putExtra("username", auth.currentUser?.email ?: "")
-                                }
-                                startActivity(intent)
-                                finish()
-                            } else {
-                                // User login failed, display an error message
-                                Toast.makeText(
-                                    this,
-                                    "Login failed. Please try again.",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
+                    val uid = auth.currentUser?.uid
+                    callback(uid, null)
                 } else {
-                    // Account creation failed, display an error message
-                    Toast.makeText(
-                        this,
-                        "Account creation failed. Please try again.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    callback(null, "Account creation failed. Please try again.")
                 }
             }
     }
 
+    private fun saveUserDetailsToDatabase(uid: String, email: String, category: String) {
+        val database = Firebase.database("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
+        val userRef = database.getReference("users").child(uid)
+        userRef.child("role").setValue(category)
+        userRef.child("email").setValue(email)
+    }
+
+    private fun loginUser(email: String, password: String) {
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { signInTask ->
+                if (signInTask.isSuccessful) {
+                    startMainActivity()
+                } else {
+                    showErrorMessage("Login failed. Please try again.")
+                }
+            }
+    }
+
+    private fun startMainActivity() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra("username", auth.currentUser?.email ?: "")
+        }
+        startActivity(intent)
+        finish()
+    }
+
+    private fun showErrorMessage(message: String?) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
 }

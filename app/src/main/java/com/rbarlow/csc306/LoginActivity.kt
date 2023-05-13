@@ -15,56 +15,82 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize the view binding
+        initBindingAndAuth()
+
+        setupClickListeners()
+    }
+
+    private fun initBindingAndAuth() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
+    }
 
-        // Set up click listeners
+    private fun setupClickListeners() {
         binding.loginButton.setOnClickListener {
-            val username = binding.usernameEditText.editText?.text.toString()
-            val password = binding.passwordEditText.editText?.text.toString()
-
-            if (username.isNotEmpty() && password.isNotEmpty()) {
-                loginUser(username, password)
-            }
+            performLogin()
         }
 
         binding.forgotPasswordTextView.setOnClickListener {
-            val email = binding.usernameEditText.editText?.text.toString()
-
-            if (email.isNotEmpty()) {
-                resetPassword(email)
-            } else {
-                showToast("Please enter your email")
-            }
+            handleForgotPassword()
         }
 
         binding.createAccountTextView.setOnClickListener {
-            startActivity(Intent(this, CreateAccountActivity::class.java))
+            navigateToCreateAccount()
         }
 
         binding.guestLoginButton.setOnClickListener {
-            auth.signOut()
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+            performGuestLogin()
         }
+    }
+
+    private fun performLogin() {
+        val username = binding.usernameEditText.editText?.text.toString()
+        val password = binding.passwordEditText.editText?.text.toString()
+
+        if (username.isNotEmpty() && password.isNotEmpty()) {
+            loginUser(username, password)
+        }
+    }
+
+    private fun handleForgotPassword() {
+        val email = binding.usernameEditText.editText?.text.toString()
+
+        if (email.isNotEmpty()) {
+            resetPassword(email)
+        } else {
+            showToast("Please enter your email")
+        }
+    }
+
+    private fun navigateToCreateAccount() {
+        startActivity(Intent(this, CreateAccountActivity::class.java))
+    }
+
+    private fun performGuestLogin() {
+        auth.signOut()
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 
     private fun loginUser(username: String, password: String) {
         auth.signInWithEmailAndPassword(username, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    val intent = Intent(this, MainActivity::class.java).apply {
-                        putExtra("username", auth.currentUser?.email ?: "")
-                    }
-                    startActivity(intent)
-                    finish()
+                    navigateToMainActivity()
                 } else {
                     showToast("Login failed. Please check your credentials.")
                 }
             }
+    }
+
+    private fun navigateToMainActivity() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra("username", auth.currentUser?.email ?: "")
+        }
+        startActivity(intent)
+        finish()
     }
 
     private fun resetPassword(email: String) {

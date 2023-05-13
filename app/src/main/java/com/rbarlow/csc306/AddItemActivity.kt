@@ -3,7 +3,6 @@ package com.rbarlow.csc306
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -31,19 +30,7 @@ class AddItemActivity : AppCompatActivity() {
 
     private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            val data: Intent? = result.data
-            if (data != null && data.data != null) {
-                filePath = data.data
-                try {
-                    Glide.with(this)
-                        .load(filePath)
-                        .override(1024) // resize the image
-                        .centerCrop() // or fitCenter()
-                        .into(imageView)
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-            }
+            handleImageSelectionResult(result.data)
         }
     }
 
@@ -51,57 +38,90 @@ class AddItemActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_item)
 
+        initViews()
+        initFirebaseReferences()
+    }
+
+    private fun initViews() {
         itemNameEditText = findViewById(R.id.itemNameEditText)
         itemDescriptionEditText = findViewById(R.id.itemDescriptionEditText)
         imageView = findViewById(R.id.imageView)
         val addButton: Button = findViewById(R.id.addButton)
         val chooseButton: Button = findViewById(R.id.chooseButton)
 
+        chooseButton.setOnClickListener { chooseImage() }
+        addButton.setOnClickListener { addItem() }
+    }
+
+    private fun initFirebaseReferences() {
         itemsReference = FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app").reference.child("items")
         storageReference = FirebaseStorage.getInstance("gs://csc306b.appspot.com").reference
+    }
 
-        chooseButton.setOnClickListener {
-            val intent = Intent()
-            intent.type = "image/*"
-            intent.action = Intent.ACTION_GET_CONTENT
-            startForResult.launch(Intent.createChooser(intent, "Select Picture"))
-        }
+    private fun chooseImage() {
+        val intent = Intent()
+        intent.type = "image/*"
+        intent.action = Intent.ACTION_GET_CONTENT
+        startForResult.launch(Intent.createChooser(intent, "Select Picture"))
+    }
 
-        addButton.setOnClickListener {
-            val name = itemNameEditText.text.toString()
-            val description = itemDescriptionEditText.text.toString()
-
-            if (name.isEmpty() || description.isEmpty() || filePath == null) {
-                Toast.makeText(this, "Please fill in all fields and select an image", Toast.LENGTH_SHORT).show()
-            } else {
-                val alertDialog = AlertDialog.Builder(this)
-                    .setTitle("Uploading...")
-                    .setCancelable(false)
-                    .create()
-
-                alertDialog.show()
-
-                val ref = storageReference.child("images/" + UUID.randomUUID().toString())
-
-                ref.putFile(filePath!!)
-                    .addOnSuccessListener {
-                        alertDialog.dismiss()
-                        Toast.makeText(this@AddItemActivity, "Uploaded", Toast.LENGTH_SHORT).show()
-                        ref.downloadUrl.addOnSuccessListener { uri ->
-                            val imageUrl = uri.toString()
-                            createNewItem(name, description, imageUrl)
-                        }
-                    }
-                    .addOnFailureListener { e ->
-                        alertDialog.dismiss()
-                        Toast.makeText(
-                            this@AddItemActivity,
-                            "Failed " + e.message,
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+    private fun handleImageSelectionResult(data: Intent?) {
+        if (data != null && data.data != null) {
+            filePath = data.data
+            try {
+                Glide.with(this)
+                    .load(filePath)
+                    .override(1024) // resize the image
+                    .centerCrop() // or fitCenter()
+                    .into(imageView)
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
         }
+    }
+
+    private fun addItem() {
+        val name = itemNameEditText.text.toString()
+        val description = itemDescriptionEditText.text.toString()
+
+        if (name.isEmpty() || description.isEmpty() || filePath == null) {
+            Toast.makeText(this, "Please fill in all fields and select an image", Toast.LENGTH_SHORT).show()
+        } else {
+            uploadImageAndCreateNewItem(name, description)
+        }
+    }
+
+    private fun uploadImageAndCreateNewItem(name: String, description: String) {
+        val alertDialog = createUploadingDialog()
+
+        alertDialog.show()
+
+        val ref = storageReference.child("images/" + UUID.randomUUID().toString())
+
+        ref.putFile(filePath!!)
+            .addOnSuccessListener {
+                alertDialog.dismiss()
+                Toast.makeText(this@AddItemActivity, "Uploaded", Toast.LENGTH_SHORT).show()
+                ref.downloadUrl.addOnSuccessListener { uri ->
+                    val imageUrl = uri.toString()
+                    createNewItem(name, description, imageUrl)
+                }
+            }
+            .addOnFailureListener { e ->
+                alertDialog.dismiss()
+                Toast.makeText(
+                    this@AddItemActivity,
+                    "Failed " + e.message,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
+
+    private fun createUploadingDialog(): AlertDialog {
+        return AlertDialog.Builder(this)
+            .setTitle("Uploading...")
+            .setCancelable(false)
+            .create()
     }
 
     private fun createNewItem(name: String, description: String, imageUrl: String) {
