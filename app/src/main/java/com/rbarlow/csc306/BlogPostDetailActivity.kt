@@ -7,6 +7,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
@@ -21,6 +22,8 @@ class BlogPostDetailActivity : AppCompatActivity() {
     private lateinit var commentsRecyclerView: RecyclerView
     private lateinit var addCommentEditText: EditText
     private lateinit var addCommentButton: Button
+
+    private lateinit var commentsAdapter: BlogCommentAdapter
     private val firebaseRepository = FirebaseRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +36,10 @@ class BlogPostDetailActivity : AppCompatActivity() {
         commentsRecyclerView = findViewById(R.id.comments_recycler_view)
         addCommentEditText = findViewById(R.id.add_comment_edit_text)
         addCommentButton = findViewById(R.id.add_comment_button)
+
+        commentsRecyclerView.layoutManager = LinearLayoutManager(this)
+        commentsAdapter = BlogCommentAdapter(emptyList())
+        commentsRecyclerView.adapter = commentsAdapter
 
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null){
@@ -81,5 +88,10 @@ class BlogPostDetailActivity : AppCompatActivity() {
 
     private fun loadComments() {
         // Fetch comments for the selected blog post from the database and display them in the RecyclerView
+        val blogPostId = intent.getStringExtra("blogPostId").toString()
+        firebaseRepository.getBlogPostComments(blogPostId).observe(this) { comments ->
+            commentsAdapter.comments = comments
+            commentsAdapter.notifyDataSetChanged()
+        }
     }
 }

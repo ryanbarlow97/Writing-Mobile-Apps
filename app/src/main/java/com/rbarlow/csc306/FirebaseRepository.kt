@@ -503,4 +503,33 @@ class FirebaseRepository {
                 }
         }
     }
+
+    fun getBlogPostComments(blogPostId: String): MutableLiveData<List<BlogComment>> {
+        val liveData = MutableLiveData<List<BlogComment>>()
+
+        firebaseInstance.reference.child("blogPosts").child(blogPostId).child("comments")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val comments = mutableListOf<BlogComment>()
+                    for (commentSnapshot in dataSnapshot.children) {
+                        val id = commentSnapshot.key
+                        val content = commentSnapshot.child("content").getValue(String::class.java)
+                        val author = commentSnapshot.child("author").getValue(String::class.java)
+                        val addedOn = commentSnapshot.child("addedOn").getValue(Long::class.java)
+
+                        if (id != null && content != null && author != null && addedOn != null) {
+                            val comment = BlogComment(id, content, author, addedOn)
+                            comments.add(comment)
+                        }
+                    }
+                    liveData.value = comments
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Could not retrieve comments", databaseError.toException())
+                }
+            })
+
+        return liveData
+    }
 }
