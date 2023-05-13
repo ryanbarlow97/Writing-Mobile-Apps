@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/md_theme_light_background"
     android:padding="16dp">
 
     <TextView
@@ -12,7 +13,7 @@
         android:layout_height="wrap_content"
         android:text="Blog Post Title"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
-        android:textColor="@color/md_theme_dark_onPrimary"
+        android:textColor="@color/md_theme_dark_onBackground"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -22,6 +23,7 @@
         android:layout_height="wrap_content"
         android:text="Author"
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/blog_post_title" />
 
@@ -31,36 +33,52 @@
         android:layout_height="wrap_content"
         android:text="Timestamp"
         android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        android:layout_marginTop="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/blog_post_author" />
 
-    <TextView
-        android:id="@+id/blog_post_content"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Blog Post Content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/blog_post_timestamp" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/comments_recycler_view"
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/blog_post_scroll_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/add_comment_edit_text"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/blog_post_timestamp"
+        app:layout_constraintBottom_toTopOf="@id/add_comment_edit_text"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/blog_post_content"
-        tools:listitem="@layout/item_comment" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/blog_post_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Blog Post Content"
+                android:layout_marginTop="16dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/comments_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                tools:listitem="@layout/item_comment" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <EditText
         android:id="@+id/add_comment_edit_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="3dp"
+        android:background="@drawable/edit_text_bg"
         android:hint="Add a comment..."
-        app:layout_constraintBottom_toTopOf="@+id/add_comment_button"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/add_comment_button"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
@@ -68,8 +86,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Add Comment"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/add_comment_edit_text" />
+        android:textColor="@color/md_theme_dark_onPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

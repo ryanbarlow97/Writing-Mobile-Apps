@@ -53,6 +53,11 @@
 
         <activity android:name=".EditItemActivity"
             android:label="Edit Item" />
+        <activity android:name=".BlogPostDetailActivity"
+            android:label="Blog Post Detail" />
+
+        <activity android:name=".CreateBlogPostActivity"
+            android:label="Create Blog Post" />
 
     </application>
 </manifest>
