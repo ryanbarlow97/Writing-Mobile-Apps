@@ -67,4 +67,5 @@
     <string name="item_description">Item Description</string>
     <string name="delete_item">Delete Item</string>
     <string name="upload_info">Uploaded by %1$s on %2$s</string>
+    <string name="create_blog_post">Create Blog Post</string>
 </resources>
