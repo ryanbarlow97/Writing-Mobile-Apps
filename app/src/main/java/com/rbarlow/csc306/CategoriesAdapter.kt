@@ -1,6 +1,7 @@
 package com.rbarlow.csc306
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,6 +41,14 @@ class CategoriesAdapter(
             setCategoryName(category)
             setUpItemsRecyclerView(listener)
 
+            itemsAdapter.setOnItemClickListener(object : ItemsAdapter.OnItemClickListener {
+                override fun onItemClick(item: Item) {
+                    val intent = Intent(context, ItemDetailsActivity::class.java)
+                    intent.putExtra("id", item.id)
+                    context.startActivity(intent)
+                }
+            })
+
             when (category.title) {
                 "New" -> populateNewItems()
                 "Hot" -> populateHotItems()
@@ -58,10 +67,10 @@ class CategoriesAdapter(
                     listener?.onItemClick(item)
                 }
             })
-
             itemsRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             itemsRecyclerView.adapter = itemsAdapter
         }
+
 
         private fun populateNewItems() {
             FirebaseRepository().getNewestItems().observe(lifecycleOwner) { newestItems ->

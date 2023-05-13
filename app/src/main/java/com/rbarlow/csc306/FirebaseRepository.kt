@@ -11,11 +11,14 @@ class FirebaseRepository {
     private val firebaseInstance =
         FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
 
-
-    //returns a string of the users role, either curator or user
+    //region User Role
     fun getUserRole(userId: String): MutableLiveData<String?> {
         val liveData = MutableLiveData<String?>()
+        fetchUserRole(userId, liveData)
+        return liveData
+    }
 
+    private fun fetchUserRole(userId: String, liveData: MutableLiveData<String?>) {
         firebaseInstance.reference.child("users").child(userId).child("role")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -27,14 +30,17 @@ class FirebaseRepository {
                     Log.e("Firebase", "Could not retrieve user role", databaseError.toException())
                 }
             })
+    }
+    //endregion
 
+    //region Categories
+    fun getCategories(): MutableLiveData<List<Category>> {
+        val liveData = MutableLiveData<List<Category>>()
+        fetchCategories(liveData)
         return liveData
     }
 
-    //get all the categories for the user to see
-    fun getCategories(): MutableLiveData<List<Category>> {
-        val liveData = MutableLiveData<List<Category>>()
-
+    private fun fetchCategories(liveData: MutableLiveData<List<Category>>) {
         firebaseInstance.reference.child("categories")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -53,29 +59,24 @@ class FirebaseRepository {
                     Log.e("Firebase", "Could not retrieve categories", databaseError.toException())
                 }
             })
+    }
+    //endregion
+
+    //region All Items
+    fun getAllItems(): MutableLiveData<List<Item>> {
+        val liveData = MutableLiveData<List<Item>>()
+        fetchAllItems(liveData)
         return liveData
     }
 
-    fun getAllItems(): MutableLiveData<List<Item>> {
-        val liveData = MutableLiveData<List<Item>>()
-
+    private fun fetchAllItems(liveData: MutableLiveData<List<Item>>) {
         firebaseInstance.reference.child("items")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val items = mutableListOf<Item>()
                     for (itemSnapshot in dataSnapshot.children) {
-                        val itemId = itemSnapshot.key
-                        val name = itemSnapshot.child("name").getValue(String::class.java)
-                        val description = itemSnapshot.child("description").getValue(String::class.java)
-                        val image = itemSnapshot.child("image").getValue(String::class.java)
-                        val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
-                        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
-                        val views = itemSnapshot.child("views").getValue(Int::class.java)
-
-                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
-                            val item = Item(itemId, name, description, image, addedOn, addedBy, views)
-                            items.add(item)
-                        }
+                        val item = getItemFromSnapshot(itemSnapshot)
+                        item?.let { items.add(it) }
                     }
                     liveData.value = items
                 }
@@ -84,41 +85,54 @@ class FirebaseRepository {
                     Log.e("Firebase", "Could not retrieve items", databaseError.toException())
                 }
             })
-
-        return liveData
     }
+
+    private fun getItemFromSnapshot(itemSnapshot: DataSnapshot): Item? {
+        val itemId = itemSnapshot.key
+        val name = itemSnapshot.child("name").getValue(String::class.java)
+        val description = itemSnapshot.child("description").getValue(String::class.java)
+        val image = itemSnapshot.child("image").getValue(String::class.java)
+        val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
+        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
+        val views = itemSnapshot.child("views").getValue(Int::class.java)
+
+        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
+            return Item(itemId, name, description, image, addedOn, addedBy, views)
+        }
+        return null
+    }
+    //endregion
+
+    //region Single Item
     fun getItem(itemId: String): MutableLiveData<Item> {
         val liveData = MutableLiveData<Item>()
+        fetchItem(itemId, liveData)
+        return liveData
+    }
 
+    private fun fetchItem(itemId: String, liveData: MutableLiveData<Item>) {
         firebaseInstance.reference.child("items")
             .child(itemId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val itemId2 = dataSnapshot.key
-                    val name = dataSnapshot.child("name").getValue(String::class.java)
-                    val description = dataSnapshot.child("description").getValue(String::class.java)
-                    val image = dataSnapshot.child("image").getValue(String::class.java)
-                    val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
-                    val addedOn = dataSnapshot.child("addedOn").getValue(Long::class.java)
-                    val views = dataSnapshot.child("views").getValue(Int::class.java)
-                    if (itemId2 != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
-                        val item = Item(itemId2, name, description, image, addedOn, addedBy, views)
-                        liveData.value = item
-                    }
+                    val item = getItemFromSnapshot(dataSnapshot)
+                    item?.let { liveData.value = it }
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
                     Log.e("Firebase", "Could not retrieve item", databaseError.toException())
                 }
             })
-
-        return liveData
     }
+    //endregion
 
-    //bookmark items for the user
+    //region Bookmark Items
     fun bookmarkItem(user: FirebaseUser, itemId: String) {
         val userBookmarksRef = firebaseInstance.reference.child("users").child(user.uid).child("bookmarks")
+        updateBookmarks(userBookmarksRef, itemId)
+    }
 
+    private fun updateBookmarks(userBookmarksRef: DatabaseReference, itemId: String) {
         userBookmarksRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if (dataSnapshot.hasChild(itemId)) {
@@ -137,10 +151,13 @@ class FirebaseRepository {
         })
     }
 
-    //get all the items that the user has bookmarked
     fun getBookmarkedItems(user: FirebaseUser): MutableLiveData<List<Item>> {
         val liveData = MutableLiveData<List<Item>>()
+        fetchBookmarkedItems(user, liveData)
+        return liveData
+    }
 
+    private fun fetchBookmarkedItems(user: FirebaseUser, liveData: MutableLiveData<List<Item>>) {
         val userBookmarksRef = firebaseInstance.reference.child("users").child(user.uid).child("bookmarks")
         userBookmarksRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -149,41 +166,7 @@ class FirebaseRepository {
                 if (itemCount == 0L) {
                     liveData.value = items
                 } else {
-                    var processedItems = 0L
-                    for (itemSnapshot in dataSnapshot.children) {
-                        val itemId = itemSnapshot.key
-                        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
-                        if (itemId != null && addedOn != null) {
-                            firebaseInstance.reference.child("items").child(itemId)
-                                .addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onDataChange(dataSnapshot: DataSnapshot) {
-                                        val name = dataSnapshot.child("name").getValue(String::class.java)
-                                        val fullDescription = dataSnapshot.child("description").getValue(String::class.java)
-                                        val description = fullDescription?.substring(0, min(fullDescription.length, 30)) + "..."
-                                        val image = dataSnapshot.child("image").getValue(String::class.java)
-                                        val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
-                                        val views = dataSnapshot.child("views").getValue(Int::class.java)
-                                        if (name != null && fullDescription != null && image != null && addedBy != null && addedOn != null && views != null) {
-                                            val item = Item(itemId, name, description, image, addedOn, addedBy , views)
-                                            items.add(item)
-                                        }
-                                        processedItems++
-                                        if (processedItems == itemCount) {
-                                            liveData.value = items
-                                        }
-                                    }
-
-                                    override fun onCancelled(databaseError: DatabaseError) {
-                                        Log.e("Firebase", "Could not retrieve bookmarked items", databaseError.toException())
-                                    }
-                                })
-                        } else {
-                            processedItems++
-                            if (processedItems == itemCount) {
-                                liveData.value = items
-                            }
-                        }
-                    }
+                    processBookmarkedItems(dataSnapshot, items, liveData)
                 }
             }
 
@@ -191,14 +174,49 @@ class FirebaseRepository {
                 Log.e("Firebase", "Could not retrieve bookmarked items", databaseError.toException())
             }
         })
-
-        return liveData
     }
 
+    private fun processBookmarkedItems(dataSnapshot: DataSnapshot, items: MutableList<Item>, liveData: MutableLiveData<List<Item>>) {
+        var processedItems = 0L
+        val itemCount = dataSnapshot.childrenCount
+        for (itemSnapshot in dataSnapshot.children) {
+            val itemId = itemSnapshot.key
+            val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
+            if (itemId != null && addedOn != null) {
+                fetchItemForBookmarkedItems(itemId, items, itemCount, processedItems, liveData)
+            } else {
+                processedItems++
+                if (processedItems == itemCount) {
+                    liveData.value = items
+                }
+            }
+        }
+    }
+
+    private fun fetchItemForBookmarkedItems(itemId: String, items: MutableList<Item>, itemCount: Long, processedItems: Long, liveData: MutableLiveData<List<Item>>) {
+        firebaseInstance.reference.child("items").child(itemId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val item = getItemFromSnapshot(dataSnapshot)
+                    item?.let { items.add(it) }
+                    if (processedItems + 1 == itemCount) {
+                        liveData.value = items
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Could not retrieve bookmarked items", databaseError.toException())
+                }
+            })
+    }
 
     fun isItemBookmarked(user: FirebaseUser, itemId: String): MutableLiveData<Boolean> {
         val liveData = MutableLiveData<Boolean>()
+        checkItemBookmarked(user, itemId, liveData)
+        return liveData
+    }
 
+    private fun checkItemBookmarked(user: FirebaseUser, itemId: String, liveData: MutableLiveData<Boolean>) {
         val userBookmarksRef = firebaseInstance.reference.child("users").child(user.uid).child("bookmarks")
         userBookmarksRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -209,13 +227,17 @@ class FirebaseRepository {
                 Log.e("Firebase", "Could not check if item is bookmarked", databaseError.toException())
             }
         })
+    }
+    //endregion
 
+    //region Newest Items
+    fun getNewestItems(limit: Int = 6): MutableLiveData<List<Item>> {
+        val liveData = MutableLiveData<List<Item>>()
+        fetchNewestItems(limit, liveData)
         return liveData
     }
 
-    fun getNewestItems(limit: Int = 6): MutableLiveData<List<Item>> {
-        val liveData = MutableLiveData<List<Item>>()
-
+    private fun fetchNewestItems(limit: Int, liveData: MutableLiveData<List<Item>>) {
         firebaseInstance.reference.child("items")
             .orderByChild("addedOn")
             .limitToLast(limit)
@@ -223,18 +245,8 @@ class FirebaseRepository {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val items = mutableListOf<Item>()
                     for (itemSnapshot in dataSnapshot.children) {
-                        val itemId = itemSnapshot.key
-                        val name = itemSnapshot.child("name").getValue(String::class.java)
-                        val description = itemSnapshot.child("description").getValue(String::class.java)
-                        val image = itemSnapshot.child("image").getValue(String::class.java)
-                        val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
-                        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
-                        val views = itemSnapshot.child("views").getValue(Int::class.java)
-
-                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
-                            val item = Item(itemId, name, description, image, addedOn, addedBy, views)
-                            items.add(item)
-                        }
+                        val item = getItemFromSnapshot(itemSnapshot)
+                        item?.let { items.add(it) }
                     }
                     items.sortByDescending { it.addedOn } // Sort items by addedOn in descending order
                     liveData.value = items
@@ -244,14 +256,17 @@ class FirebaseRepository {
                     Log.e("Firebase", "Could not retrieve newest items", databaseError.toException())
                 }
             })
+    }
+    //endregion
 
+    //region Most Viewed Items
+    fun getMostViewedItems(limit: Int = 6): MutableLiveData<List<Item>> {
+        val liveData = MutableLiveData<List<Item>>()
+        fetchMostViewedItems(limit, liveData)
         return liveData
     }
 
-    //get the most viewed items
-    fun getMostViewedItems(limit: Int = 6): MutableLiveData<List<Item>> {
-        val liveData = MutableLiveData<List<Item>>()
-
+    private fun fetchMostViewedItems(limit: Int, liveData: MutableLiveData<List<Item>>) {
         firebaseInstance.reference.child("items")
             .orderByChild("views")
             .limitToLast(limit)
@@ -259,18 +274,8 @@ class FirebaseRepository {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val items = mutableListOf<Item>()
                     for (itemSnapshot in dataSnapshot.children) {
-                        val itemId = itemSnapshot.key
-                        val name = itemSnapshot.child("name").getValue(String::class.java)
-                        val description = itemSnapshot.child("description").getValue(String::class.java)
-                        val image = itemSnapshot.child("image").getValue(String::class.java)
-                        val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
-                        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
-                        val views = itemSnapshot.child("views").getValue(Int::class.java)
-
-                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
-                            val item = Item(itemId, name, description, image, addedOn, addedBy, views)
-                            items.add(item)
-                        }
+                        val item = getItemFromSnapshot(itemSnapshot)
+                        item?.let { items.add(it) }
                     }
                     items.sortByDescending { it.views } // Sort items by views in descending order
                     liveData.value = items
@@ -280,10 +285,10 @@ class FirebaseRepository {
                     Log.e("Firebase", "Could not retrieve most viewed items", databaseError.toException())
                 }
             })
-
-        return liveData
     }
-    //add a view to an item
+    //endregion
+
+    //region Add View to Item
     fun addViewToItem(itemId: String) {
         firebaseInstance.reference.child("items").child(itemId).child("views")
             .runTransaction(object : Transaction.Handler {
@@ -302,17 +307,22 @@ class FirebaseRepository {
                 }
             })
     }
-    //user has viewed the item
+    //endregion
+
+    //region User Viewed Item
     fun userViewedItem(user: FirebaseUser, itemId: String) {
         val userViewedItemsRef = firebaseInstance.reference.child("users").child(user.uid).child("viewedItems")
         userViewedItemsRef.child(itemId).setValue(true)
         userViewedItemsRef.child(itemId).child("viewedOn").setValue(ServerValue.TIMESTAMP)
     }
 
-    //get the items that the user has viewed
     fun hasUserViewedItem(user: FirebaseUser, itemId: String): MutableLiveData<Boolean> {
         val liveData = MutableLiveData<Boolean>()
+        checkUserViewedItem(user, itemId, liveData)
+        return liveData
+    }
 
+    private fun checkUserViewedItem(user: FirebaseUser, itemId: String, liveData: MutableLiveData<Boolean>) {
         val userViewedItemsRef = firebaseInstance.reference.child("users").child(user.uid).child("viewedItems")
         userViewedItemsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -323,14 +333,15 @@ class FirebaseRepository {
                 Log.e("Firebase", "Could not check if user has viewed item", databaseError.toException())
             }
         })
+    }
 
+    fun getUserViewedItems(user: FirebaseUser): MutableLiveData<List<Item>> {
+        val liveData = MutableLiveData<List<Item>>()
+        fetchUserViewedItems(user, liveData)
         return liveData
     }
 
-    //get list of items that the user has viewed
-    fun getUserViewedItems(user: FirebaseUser): MutableLiveData<List<Item>> {
-        val liveData = MutableLiveData<List<Item>>()
-
+    private fun fetchUserViewedItems(user: FirebaseUser, liveData: MutableLiveData<List<Item>>) {
         val userViewedItemsRef = firebaseInstance.reference.child("users").child(user.uid).child("viewedItems")
         userViewedItemsRef.orderByChild("viewedOn").limitToLast(6)
             .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -340,40 +351,7 @@ class FirebaseRepository {
                     if (itemCount == 0L) {
                         liveData.value = items
                     } else {
-                        var processedItems = 0L
-                        for (itemSnapshot in dataSnapshot.children) {
-                            val itemId = itemSnapshot.key
-                            if (itemId != null) {
-                                firebaseInstance.reference.child("items").child(itemId)
-                                    .addListenerForSingleValueEvent(object : ValueEventListener {
-                                        override fun onDataChange(dataSnapshot: DataSnapshot) {
-                                            val name = dataSnapshot.child("name").getValue(String::class.java)
-                                            val description = dataSnapshot.child("description").getValue(String::class.java)
-                                            val image = dataSnapshot.child("image").getValue(String::class.java)
-                                            val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
-                                            val addedOn = dataSnapshot.child("addedOn").getValue(Long::class.java)
-                                            val views = dataSnapshot.child("views").getValue(Int::class.java)
-                                            if (name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
-                                                val item = Item(itemId, name, description, image, addedOn, addedBy, views)
-                                                items.add(item)
-                                            }
-                                            processedItems++
-                                            if (processedItems == itemCount) {
-                                                liveData.value = items
-                                            }
-                                        }
-
-                                        override fun onCancelled(databaseError: DatabaseError) {
-                                            Log.e("Firebase", "Could not retrieve viewed items", databaseError.toException())
-                                        }
-                                    })
-                            } else {
-                                processedItems++
-                                if (processedItems == itemCount) {
-                                    liveData.value = items
-                                }
-                            }
-                        }
+                        processUserViewedItems(dataSnapshot, items, liveData)
                     }
                 }
 
@@ -381,7 +359,39 @@ class FirebaseRepository {
                     Log.e("Firebase", "Could not retrieve viewed items", databaseError.toException())
                 }
             })
-
-        return liveData
     }
+
+    private fun processUserViewedItems(dataSnapshot: DataSnapshot, items: MutableList<Item>, liveData: MutableLiveData<List<Item>>) {
+        var processedItems = 0L
+        val itemCount = dataSnapshot.childrenCount
+        for (itemSnapshot in dataSnapshot.children) {
+            val itemId = itemSnapshot.key
+            if (itemId != null) {
+                fetchItemForUserViewedItems(itemId, items, itemCount, processedItems, liveData)
+            } else {
+                processedItems++
+                if (processedItems == itemCount) {
+                    liveData.value = items
+                }
+            }
+        }
+    }
+
+    private fun fetchItemForUserViewedItems(itemId: String, items: MutableList<Item>, itemCount: Long, processedItems: Long, liveData: MutableLiveData<List<Item>>) {
+        firebaseInstance.reference.child("items").child(itemId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val item = getItemFromSnapshot(dataSnapshot)
+                    item?.let { items.add(it) }
+                    if (processedItems + 1 == itemCount) {
+                        liveData.value = items
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Could not retrieve viewed items", databaseError.toException())
+                }
+            })
+    }
+    //endregion
 }
