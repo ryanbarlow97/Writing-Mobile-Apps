@@ -56,6 +56,7 @@
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/nestedScrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
@@ -83,9 +84,9 @@
                                             android:layout_width="match_parent"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="@dimen/spacing_large"
-                                            android:layout_marginEnd="@dimen/spacing_large"
                                             android:layout_marginTop="@dimen/spacing_large"
-                                            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"/>
+                                            android:layout_marginEnd="@dimen/spacing_large"
+                                            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
 
                                         <TextView
                                             android:id="@+id/description"
@@ -119,8 +120,21 @@
             app:elevation="6dp"
             app:pressedTranslationZ="12dp"
             app:rippleColor="@android:color/white"
-
             app:layout_anchor="@id/app_bar_layout"
             app:layout_anchorGravity="bottom|right|end" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/edit_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/spacing_large"
+            android:src="@drawable/ic_edit"
+            app:borderWidth="0dp"
+            app:elevation="6dp"
+            app:layout_anchor="@+id/nestedScrollView"
+            app:layout_anchorGravity="end|bottom"
+            app:pressedTranslationZ="12dp"
+            app:rippleColor="@android:color/white" />
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

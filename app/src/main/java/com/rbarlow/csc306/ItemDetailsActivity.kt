@@ -1,5 +1,6 @@
 package com.rbarlow.csc306
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -14,11 +15,13 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.view.View
 import android.widget.ImageButton
+import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
+import com.rbarlow.csc306.databinding.FragmentHomePageBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,6 +31,10 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var progressBar: LinearProgressIndicator
     private lateinit var textToSpeech: TextToSpeech
     private val utteranceId = "descriptionUtterance"
+    private lateinit var editFab: FloatingActionButton
+    private var _binding: FragmentHomePageBinding? = null
+    private val binding get() = _binding!!
+    private val firebaseRepository = FirebaseRepository()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +44,6 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         textToSpeech = TextToSpeech(this, this)
 
         // Create an instance of FirebaseRepository
-        val firebaseRepository = FirebaseRepository()
         val currentUser = FirebaseAuth.getInstance().currentUser
 
 
@@ -89,14 +95,8 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
                 if (currentUser != null) {
                     firebaseRepository.hasUserViewedItem(currentUser, item.id)
-                        .observe(this) { hasViewed ->
-                            if (hasViewed) {
-                                // The user has viewed the item before
-                                firebaseRepository.userViewedItem(currentUser, item.id)
-                            } else {
-                                firebaseRepository.userViewedItem(currentUser, item.id)
-                            }
-                        }
+                        .observe(this) {
+                            firebaseRepository.userViewedItem(currentUser, item.id) }
                 }
             }
         }
@@ -127,11 +127,27 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
         }
 
+
+        editFab = findViewById(R.id.edit_fab)
+        //check if user is logged in, if so, show edit button
+        if (currentUser != null) {
+            editFab.isVisible = true
+        }
+
+        //if user clicks the edit button, take them to the edit page
+        editFab.setOnClickListener {
+            val intent = Intent(this, EditItemActivity::class.java)
+            intent.putExtra("id", itemId)
+            startActivity(intent)
+        }
+
+
         if (currentUser == null) {
             // Hide the bookmark button
             val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
             val bookmarksButton = toolbar.menu.findItem(R.id.bookmarksButton)
             bookmarksButton.isVisible = false
+            editFab.isVisible = false
         }
 
         // Set the OnClickListener to toggle the button appearance and play/stop the audio

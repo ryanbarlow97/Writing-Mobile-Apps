@@ -51,5 +51,8 @@
         <activity android:name=".AddItemActivity"
             android:label="Add Item" />
 
+        <activity android:name=".EditItemActivity"
+            android:label="Edit Item" />
+
     </application>
 </manifest>

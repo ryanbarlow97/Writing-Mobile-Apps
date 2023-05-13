@@ -1,6 +1,5 @@
 package com.rbarlow.csc306
 
-import android.app.ProgressDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -9,6 +8,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
@@ -27,7 +28,24 @@ class AddItemActivity : AppCompatActivity() {
     private lateinit var itemsReference: DatabaseReference
     private lateinit var storageReference: StorageReference
     private var filePath: Uri? = null
-    private val PICK_IMAGE_REQUEST = 71
+
+    private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data: Intent? = result.data
+            if (data != null && data.data != null) {
+                filePath = data.data
+                try {
+                    Glide.with(this)
+                        .load(filePath)
+                        .override(1024) // resize the image
+                        .centerCrop() // or fitCenter()
+                        .into(imageView)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +64,7 @@ class AddItemActivity : AppCompatActivity() {
             val intent = Intent()
             intent.type = "image/*"
             intent.action = Intent.ACTION_GET_CONTENT
-            startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST)
+            startForResult.launch(Intent.createChooser(intent, "Select Picture"))
         }
 
         addButton.setOnClickListener {
@@ -56,15 +74,18 @@ class AddItemActivity : AppCompatActivity() {
             if (name.isEmpty() || description.isEmpty() || filePath == null) {
                 Toast.makeText(this, "Please fill in all fields and select an image", Toast.LENGTH_SHORT).show()
             } else {
-                val progressDialog = ProgressDialog(this)
-                progressDialog.setTitle("Uploading...")
-                progressDialog.show()
+                val alertDialog = AlertDialog.Builder(this)
+                    .setTitle("Uploading...")
+                    .setCancelable(false)
+                    .create()
+
+                alertDialog.show()
 
                 val ref = storageReference.child("images/" + UUID.randomUUID().toString())
 
                 ref.putFile(filePath!!)
                     .addOnSuccessListener {
-                        progressDialog.dismiss()
+                        alertDialog.dismiss()
                         Toast.makeText(this@AddItemActivity, "Uploaded", Toast.LENGTH_SHORT).show()
                         ref.downloadUrl.addOnSuccessListener { uri ->
                             val imageUrl = uri.toString()
@@ -72,34 +93,13 @@ class AddItemActivity : AppCompatActivity() {
                         }
                     }
                     .addOnFailureListener { e ->
-                        progressDialog.dismiss()
+                        alertDialog.dismiss()
                         Toast.makeText(
                             this@AddItemActivity,
                             "Failed " + e.message,
                             Toast.LENGTH_SHORT
                         ).show()
                     }
-                    .addOnProgressListener { taskSnapshot ->
-                        val progress = 100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount
-                        progressDialog.setMessage("Uploaded " + progress.toInt() + "%")
-                    }
-            }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
-            && data != null && data.data != null) {
-            filePath = data.data
-            try {
-                Glide.with(this)
-                    .load(filePath)
-                    .override(1024) // resize the image
-                    .centerCrop() // or fitCenter()
-                    .into(imageView)
-            } catch (e: IOException) {
-                e.printStackTrace()
             }
         }
     }

@@ -40,7 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="302dp"
             android:hint="Item Description"
-            android:inputType="text" />
+            android:inputType="textMultiLine" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <ImageView
