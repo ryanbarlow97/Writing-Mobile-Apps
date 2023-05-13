@@ -65,12 +65,6 @@ class CreateAccountActivity : AppCompatActivity() {
                     userRef.child("role").setValue(userRole)
                     userRef.child("email").setValue(user?.email)
 
-                    val userCategoriesRef = userRef.child("user_categories")
-                    userCategoriesRef.child("new").setValue("New")
-                    userCategoriesRef.child("trending").setValue("Trending")
-                    userCategoriesRef.child("continue_viewing").setValue("Continue Viewing")
-                    userCategoriesRef.child("view_again").setValue("View Again")
-
                     // Log in the user
                     auth.signInWithEmailAndPassword(email, password)
                         .addOnCompleteListener { signInTask ->
