@@ -41,14 +41,6 @@ class CategoriesAdapter(
             setCategoryName(category)
             setUpItemsRecyclerView(listener)
 
-            itemsAdapter.setOnItemClickListener(object : ItemsAdapter.OnItemClickListener {
-                override fun onItemClick(item: Item) {
-                    val intent = Intent(context, ItemDetailsActivity::class.java)
-                    intent.putExtra("id", item.id)
-                    context.startActivity(intent)
-                }
-            })
-
             when (category.title) {
                 "New" -> populateNewItems()
                 "Hot" -> populateHotItems()
@@ -65,6 +57,9 @@ class CategoriesAdapter(
             itemsAdapter.setOnItemClickListener(object : ItemsAdapter.OnItemClickListener {
                 override fun onItemClick(item: Item) {
                     listener?.onItemClick(item)
+                    val intent = Intent(context, ItemDetailsActivity::class.java)
+                    intent.putExtra("id", item.id)
+                    context.startActivity(intent)
                 }
             })
             itemsRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
