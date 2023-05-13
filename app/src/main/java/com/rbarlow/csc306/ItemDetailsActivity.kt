@@ -15,6 +15,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.view.View
 import android.widget.ImageButton
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -36,7 +37,29 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private val binding get() = _binding!!
     private val firebaseRepository = FirebaseRepository()
 
+    private val editItemLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            // if the edit was a success, reload the item details from the database to show the updated information
+            val itemId = intent.getStringExtra("id")
+            if (itemId != null) {
+                firebaseRepository.getItem(itemId).observe(this) { item: Item ->
 
+                    //set title
+                    val titleTextView = findViewById<TextView>(R.id.title)
+                    titleTextView.text = item.name
+                    val descriptionTextView = findViewById<TextView>(R.id.description)
+                    descriptionTextView.text = item.description
+                    val image = findViewById<ImageView>(R.id.image)
+                    Glide.with(this)
+                        .load(item.image)
+                        .override(1024)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(image)
+
+                }
+            }
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_item)
@@ -138,7 +161,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         editFab.setOnClickListener {
             val intent = Intent(this, EditItemActivity::class.java)
             intent.putExtra("id", itemId)
-            startActivity(intent)
+            editItemLauncher.launch(intent) // Use editItemLauncher instead of startActivity()
         }
 
 

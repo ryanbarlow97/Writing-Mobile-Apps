@@ -14,6 +14,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
+import java.io.IOException
 import java.util.*
 
 class EditItemActivity : AppCompatActivity() {
@@ -39,7 +40,15 @@ class EditItemActivity : AppCompatActivity() {
             val data: Intent? = result.data
             if (data != null && data.data != null) {
                 filePath = data.data
-                imageView.setImageURI(filePath)
+                try {
+                    Glide.with(this)
+                        .load(filePath)
+                        .override(1024) // resize the image
+                        .centerCrop() // or fitCenter()
+                        .into(imageView)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
             }
         }
     }
@@ -73,7 +82,11 @@ class EditItemActivity : AppCompatActivity() {
             val description = itemDescriptionEditText.text.toString()
 
             if (name.isEmpty() || description.isEmpty()) {
-                Toast.makeText(this, "Please fill in all fields and select an image", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Please fill in all fields and select an image",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
                 if (filePath != null) {
                     val ref = storageReference.child("images/" + UUID.randomUUID().toString())
@@ -123,6 +136,7 @@ class EditItemActivity : AppCompatActivity() {
             itemsReference.child(itemKey!!).updateChildren(itemUpdates).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(this, "Item updated successfully", Toast.LENGTH_SHORT).show()
+                    setResult(RESULT_OK) // Add this line to set the result
                     finish()
                 } else {
                     Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
