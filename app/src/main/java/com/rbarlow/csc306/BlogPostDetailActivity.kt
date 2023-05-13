@@ -69,6 +69,7 @@ class BlogPostDetailActivity : AppCompatActivity() {
                     // Comment was added successfully
                     // Clear EditText and update UI if necessary
                     addCommentEditText.text.clear()
+                    loadComments()
                 } else {
                     // There was an error while adding the comment
                     // Show an error message or handle the error appropriately
