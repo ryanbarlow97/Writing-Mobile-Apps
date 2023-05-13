@@ -28,11 +28,7 @@ class HomePageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (FirebaseAuth.getInstance().currentUser == null) {
-            binding.userNameTextView.text = "Not logged in"
-        } else {
-            binding.userNameTextView.text = FirebaseAuth.getInstance().currentUser?.email
-        }
+
 
         // Initialize the RecyclerView with an empty adapter
         val adapter = CategoriesAdapter(emptyList(), viewLifecycleOwner, requireContext()) // Add requireContext() here
@@ -54,7 +50,6 @@ class HomePageFragment : Fragment() {
         firebaseRepository.getUserRole(FirebaseAuth.getInstance().currentUser?.uid.toString()).observe(viewLifecycleOwner
         ) { userRole ->
             if (userRole == "curator") {
-                binding.imageView.visibility = View.VISIBLE
                 binding.addItemButton.visibility = View.VISIBLE
                 binding.addItemButton.setOnClickListener {
                     val intent = Intent(requireActivity(), AddItemActivity::class.java)

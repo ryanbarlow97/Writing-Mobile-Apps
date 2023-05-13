@@ -10,32 +10,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="20dp">
-
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_weight="0"
-                android:visibility="invisible"
-                app:srcCompat="@drawable/ic_editor_icon" />
-
-            <TextView
-                android:id="@+id/userNameTextView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="dummy"
-                android:textAlignment="textEnd"
-                android:textColor="@android:color/black"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_home_page"
             android:layout_width="match_parent"

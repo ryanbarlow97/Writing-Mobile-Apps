@@ -59,4 +59,7 @@
     <string name="favourite">favourite</string>
     <string name="item_description_bookmark">item bookmarks</string>
     <string name="no_bookmarks">No Bookmarks</string>
+    <string name="logout">Logout</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>
