@@ -82,6 +82,7 @@ class CategoriesAdapter(
         private fun populateViewedItems() {
             val currentUser = FirebaseAuth.getInstance().currentUser
             if (currentUser != null) {
+                println("Current user: $currentUser")
                 FirebaseRepository().getUserViewedItems(currentUser).observe(lifecycleOwner) { viewedItems ->
                     itemsAdapter.updateItems(viewedItems.reversed())
                 }
