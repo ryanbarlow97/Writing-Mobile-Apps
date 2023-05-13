@@ -130,7 +130,9 @@ class EditItemActivity : AppCompatActivity() {
             val itemUpdates = mapOf(
                 "name" to name,
                 "description" to description,
-                "image" to imageUrl
+                "image" to imageUrl,
+                "addedOn" to System.currentTimeMillis(),
+                "approved" to true
             )
 
             itemsReference.child(itemKey!!).updateChildren(itemUpdates).addOnCompleteListener { task ->

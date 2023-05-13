@@ -20,6 +20,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -161,8 +165,24 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun setupEditFab(currentUser: FirebaseUser?, itemId: String?) {
         editFab = findViewById(R.id.edit_fab)
         // Check if user is logged in, if so, show edit button
-        if (currentUser != null) {
-            editFab.isVisible = true
+
+        var user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            val userRoleRef =
+                FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
+                    .getReference("users").child(user.uid).child("role")
+            userRoleRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val role = dataSnapshot.value.toString()
+                    val isCurator = role == "curator"
+                    editFab.isVisible = isCurator
+                }
+                override fun onCancelled(databaseError: DatabaseError) {
+                    println("The read failed: " + databaseError.code)
+                }
+            })
+        } else {
+            editFab.isVisible = false
         }
 
         // If user clicks the edit button, take them to the edit page

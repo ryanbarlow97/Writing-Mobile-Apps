@@ -125,6 +125,39 @@ class FirebaseRepository {
         return liveData
     }
 
+    fun getAllUnapprovedItems(): MutableLiveData<List<Item>> {
+        val liveData = MutableLiveData<List<Item>>()
+
+        firebaseInstance.reference.child("items")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val items = mutableListOf<Item>()
+                    for (itemSnapshot in dataSnapshot.children) {
+                        val itemId = itemSnapshot.key
+                        val name = itemSnapshot.child("name").getValue(String::class.java)
+                        val description = itemSnapshot.child("description").getValue(String::class.java)
+                        val image = itemSnapshot.child("image").getValue(String::class.java)
+                        val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
+                        val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
+                        val views = itemSnapshot.child("views").getValue(Int::class.java)
+                        val approved = itemSnapshot.child("approved").getValue(Boolean::class.java)
+
+                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null && approved != null && approved == false) {
+                            val item = Item(itemId, name, description, image, addedOn, addedBy, views, approved)
+                            items.add(item)
+                        }
+                    }
+                    liveData.value = items
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Could not retrieve items", databaseError.toException())
+                }
+            })
+
+        return liveData
+    }
+
     fun getItem(itemId: String): MutableLiveData<Item> {
         val liveData = MutableLiveData<Item>()
 
@@ -400,7 +433,7 @@ class FirebaseRepository {
                                             val views = dataSnapshot.child("views").getValue(Int::class.java)
                                             val approved = dataSnapshot.child("approved").getValue(Boolean::class.java)
 
-                                            if (name != null && description != null && image != null && addedBy != null && addedOn != null && views != null && approved != null) {
+                                            if (name != null && description != null && image != null && addedBy != null && addedOn != null && views != null && approved != null && approved != false) {
                                                 val item = Item(itemId, name, description, image, addedOn, addedBy, views, approved)
                                                 items.add(item)
                                             }

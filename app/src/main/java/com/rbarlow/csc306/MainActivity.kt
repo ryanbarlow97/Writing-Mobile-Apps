@@ -13,6 +13,10 @@ import com.google.firebase.auth.FirebaseAuth
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class MainActivity : AppCompatActivity() {
 
@@ -64,6 +68,13 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                     drawerLayout.closeDrawers()
                     updateMenuItems()
+                    true
+                }
+                R.id.pending -> {
+                    // Navigate to the PendingItemsActivity
+                    val intent = Intent(this, PendingItemsActivity::class.java)
+                    startActivity(intent)
+                    drawerLayout.closeDrawers()
                     true
                 }
                 else -> false
@@ -122,8 +133,29 @@ class MainActivity : AppCompatActivity() {
         val isLoggedIn = FirebaseAuth.getInstance().currentUser != null
         val logoutItem = navigationView.menu.findItem(R.id.logout)
         val loginItem = navigationView.menu.findItem(R.id.login)
+        val pendingItem = navigationView.menu.findItem(R.id.pending)
+
         logoutItem.isVisible = isLoggedIn
         loginItem.isVisible = !isLoggedIn
+
+        var user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            val userRoleRef =
+                FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
+                    .getReference("users").child(user.uid).child("role")
+            userRoleRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val role = dataSnapshot.value.toString()
+                    val isCurator = role == "curator"
+                    pendingItem.isVisible = isCurator
+                }
+                override fun onCancelled(databaseError: DatabaseError) {
+                    println("The read failed: " + databaseError.code)
+                }
+            })
+        } else {
+            pendingItem.isVisible = false
+        }
     }
 }
 

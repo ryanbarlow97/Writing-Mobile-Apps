@@ -59,5 +59,8 @@
         <activity android:name=".CreateBlogPostActivity"
             android:label="Create Blog Post" />
 
+        <activity android:name=".PendingItemsActivity"
+            android:label="Pending Items" />
+
     </application>
 </manifest>

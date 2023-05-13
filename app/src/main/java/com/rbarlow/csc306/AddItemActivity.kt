@@ -151,7 +151,6 @@ class AddItemActivity : AppCompatActivity() {
             userRoleRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val role = dataSnapshot.value.toString()
-                    println(role)
                     val isCurator = role == "curator"
 
                     if (itemKey != null) {
@@ -163,7 +162,6 @@ class AddItemActivity : AppCompatActivity() {
                             "views" to 0,
                             "approved" to isCurator,
                         )
-                        println(item)
                         itemsReference.child(itemKey).setValue(item).addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 Toast.makeText(context, "Item added successfully", Toast.LENGTH_SHORT).show()
