@@ -11,8 +11,7 @@ class FirebaseRepository {
     private val firebaseInstance =
         FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
 
-
-    //returns a string of the users role, either curator or user
+    //region User Role
     fun getUserRole(userId: String): MutableLiveData<String?> {
         val liveData = MutableLiveData<String?>()
 
@@ -30,8 +29,43 @@ class FirebaseRepository {
 
         return liveData
     }
+    //endregion
 
-    //get all the categories for the user to see
+    //region Blog Posts
+    fun getBlogPosts(): MutableLiveData<List<BlogPost>> {
+        val liveData = MutableLiveData<List<BlogPost>>()
+
+        firebaseInstance.reference.child("blogPosts")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val blogPosts = mutableListOf<BlogPost>()
+                    for (blogPostSnapshot in dataSnapshot.children) {
+                        val id = blogPostSnapshot.key
+                        val title = blogPostSnapshot.child("title").getValue(String::class.java)
+                        val content = blogPostSnapshot.child("content").getValue(String::class.java)
+                        val author = blogPostSnapshot.child("author").getValue(String::class.java)
+                        val addedOn = blogPostSnapshot.child("addedOn").getValue(Long::class.java)
+
+                        if (id != null && title != null && content != null && author != null && addedOn != null) {
+                            val blogPost = BlogPost(id, title, content, author, addedOn)
+                            blogPosts.add(blogPost)
+                        }
+                    }
+                    //reverse the list so the newest posts are at the top
+                    blogPosts.reverse()
+                    liveData.value = blogPosts
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("Firebase", "Could not retrieve blog posts", databaseError.toException())
+                }
+            })
+
+        return liveData
+    }
+    //endregion
+
+    //region Categories
     fun getCategories(): MutableLiveData<List<Category>> {
         val liveData = MutableLiveData<List<Category>>()
 
@@ -55,7 +89,9 @@ class FirebaseRepository {
             })
         return liveData
     }
+    //endregion
 
+    //region Items
     fun getAllItems(): MutableLiveData<List<Item>> {
         val liveData = MutableLiveData<List<Item>>()
 
@@ -87,6 +123,7 @@ class FirebaseRepository {
 
         return liveData
     }
+
     fun getItem(itemId: String): MutableLiveData<Item> {
         val liveData = MutableLiveData<Item>()
 
@@ -114,8 +151,9 @@ class FirebaseRepository {
 
         return liveData
     }
+    //endregion
 
-    //bookmark items for the user
+    //region Bookmarks
     fun bookmarkItem(user: FirebaseUser, itemId: String) {
         val userBookmarksRef = firebaseInstance.reference.child("users").child(user.uid).child("bookmarks")
 
@@ -137,7 +175,6 @@ class FirebaseRepository {
         })
     }
 
-    //get all the items that the user has bookmarked
     fun getBookmarkedItems(user: FirebaseUser): MutableLiveData<List<Item>> {
         val liveData = MutableLiveData<List<Item>>()
 
@@ -195,7 +232,6 @@ class FirebaseRepository {
         return liveData
     }
 
-
     fun isItemBookmarked(user: FirebaseUser, itemId: String): MutableLiveData<Boolean> {
         val liveData = MutableLiveData<Boolean>()
 
@@ -212,7 +248,9 @@ class FirebaseRepository {
 
         return liveData
     }
+    //endregion
 
+    //region New and Most Viewed Items
     fun getNewestItems(limit: Int = 6): MutableLiveData<List<Item>> {
         val liveData = MutableLiveData<List<Item>>()
 
@@ -248,7 +286,6 @@ class FirebaseRepository {
         return liveData
     }
 
-    //get the most viewed items
     fun getMostViewedItems(limit: Int = 6): MutableLiveData<List<Item>> {
         val liveData = MutableLiveData<List<Item>>()
 
@@ -283,7 +320,9 @@ class FirebaseRepository {
 
         return liveData
     }
-    //add a view to an item
+    //endregion
+
+    //region Views
     fun addViewToItem(itemId: String) {
         firebaseInstance.reference.child("items").child(itemId).child("views")
             .runTransaction(object : Transaction.Handler {
@@ -302,7 +341,7 @@ class FirebaseRepository {
                 }
             })
     }
-    //user has viewed the item
+
     fun userViewedItem(user: FirebaseUser, itemId: String) {
         val userViewedItemsRef = firebaseInstance.reference.child("users").child(user.uid).child("viewedItems")
         userViewedItemsRef.child(itemId).setValue(true)
@@ -383,7 +422,9 @@ class FirebaseRepository {
             })
         return liveData
     }
+    //endregion
 
+    //region Item Deletion
     fun deleteItemWithReferences(itemId: String, onComplete: ((Boolean, String?) -> Unit)?) {
         // Delete all references to the item in the users' bookmarks and viewedItems
         firebaseInstance.reference.child("users")
@@ -432,6 +473,15 @@ class FirebaseRepository {
                 onComplete?.invoke(task.isSuccessful, task.exception?.message)
             }
     }
+    //endregion
+
+    //region Blog Posts
+    fun createBlogPost(blogPost: BlogPost, onComplete: ((Boolean, String?) -> Unit)?) {
+        val blogPostRef = firebaseInstance.reference.child("blogPosts").push()
+        blogPostRef.setValue(blogPost)
+            .addOnCompleteListener { task ->
+                onComplete?.invoke(task.isSuccessful, task.exception?.message)
+            }
+    }
+    //endregion
 }
-
-
