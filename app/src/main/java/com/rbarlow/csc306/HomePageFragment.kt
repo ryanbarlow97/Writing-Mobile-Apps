@@ -50,16 +50,14 @@ class HomePageFragment : Fragment() {
     }
 
     private fun observeUserRole() {
-        firebaseRepository.getUserRole(FirebaseAuth.getInstance().currentUser?.uid.toString())
-            .observe(viewLifecycleOwner) { userRole ->
-                if (userRole == "curator") {
-                    binding.addItemButton.visibility = View.VISIBLE
-                    binding.addItemButton.setOnClickListener {
-                        val intent = Intent(requireActivity(), AddItemActivity::class.java)
-                        startActivity(intent)
-                    }
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            binding.addItemButton.visibility = View.VISIBLE
+            binding.addItemButton.setOnClickListener {
+                val intent = Intent(requireActivity(), AddItemActivity::class.java)
+                startActivity(intent)
                 }
-            }
+        }
     }
 
     override fun onResume() {

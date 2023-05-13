@@ -1,21 +1,21 @@
 package com.rbarlow.csc306
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.Toast
+import android.view.LayoutInflater
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.OnProgressListener
 import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
 import java.io.IOException
 import java.util.UUID
 
@@ -27,6 +27,7 @@ class AddItemActivity : AppCompatActivity() {
     private lateinit var itemsReference: DatabaseReference
     private lateinit var storageReference: StorageReference
     private var filePath: Uri? = null
+    private var firebaseRepository = FirebaseRepository()
 
     private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
@@ -40,6 +41,8 @@ class AddItemActivity : AppCompatActivity() {
 
         initViews()
         initFirebaseReferences()
+
+
     }
 
     private fun initViews() {
@@ -96,17 +99,29 @@ class AddItemActivity : AppCompatActivity() {
 
         alertDialog.show()
 
+        val progressBar: ProgressBar = alertDialog.findViewById(R.id.uploadingProgressBar)!!
+        val percentageTextView: TextView = alertDialog.findViewById(R.id.uploadingPercentageTextView)!!
+
         val ref = storageReference.child("images/" + UUID.randomUUID().toString())
 
-        ref.putFile(filePath!!)
-            .addOnSuccessListener {
-                alertDialog.dismiss()
-                Toast.makeText(this@AddItemActivity, "Uploaded", Toast.LENGTH_SHORT).show()
-                ref.downloadUrl.addOnSuccessListener { uri ->
-                    val imageUrl = uri.toString()
-                    createNewItem(name, description, imageUrl)
-                }
+        val uploadTask = ref.putFile(filePath!!)
+
+        val progressListener = OnProgressListener<UploadTask.TaskSnapshot> { taskSnapshot ->
+            val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toInt()
+            progressBar.progress = progress
+            percentageTextView.text = "$progress%"
+        }
+
+        uploadTask.addOnProgressListener(progressListener)
+
+        uploadTask.addOnSuccessListener {
+            alertDialog.dismiss()
+            Toast.makeText(this@AddItemActivity, "Uploaded", Toast.LENGTH_SHORT).show()
+            ref.downloadUrl.addOnSuccessListener { uri ->
+                val imageUrl = uri.toString()
+                createNewItem(this, name, description, imageUrl)
             }
+        }
             .addOnFailureListener { e ->
                 alertDialog.dismiss()
                 Toast.makeText(
@@ -118,33 +133,53 @@ class AddItemActivity : AppCompatActivity() {
     }
 
     private fun createUploadingDialog(): AlertDialog {
-        return AlertDialog.Builder(this)
-            .setTitle("Uploading...")
-            .setCancelable(false)
-            .create()
+        val alertDialog = AlertDialog.Builder(this).create()
+        val view = LayoutInflater.from(this).inflate(R.layout.uploading_dialog_layout, null)
+        alertDialog.setView(view)
+        alertDialog.setCancelable(false)
+        return alertDialog
     }
 
-    private fun createNewItem(name: String, description: String, imageUrl: String) {
+    private fun createNewItem(context: Context, name: String, description: String, imageUrl: String) {
         val itemKey = itemsReference.push().key // this will create a unique key for the new item
 
-        if (itemKey != null) {
-            val item = mapOf(
-                "name" to name,
-                "description" to description,
-                "image" to imageUrl,
-                "addedBy" to (FirebaseAuth.getInstance().currentUser?.email ?: ""),
-                "addedOn" to System.currentTimeMillis(),
-                "views" to 0,
-            )
+        //get users role
+        val user = FirebaseAuth.getInstance().currentUser
+        //use firebase repository to get user role
+        if (user != null) {
+            val userRoleRef = FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app").getReference("users").child(user.uid).child("role")
+            userRoleRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val role = dataSnapshot.value.toString()
+                    println(role)
+                    val isCurator = role == "curator"
 
-            itemsReference.child(itemKey).setValue(item).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Toast.makeText(this, "Item added successfully", Toast.LENGTH_SHORT).show()
-                    finish()
-                } else {
-                    Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                    if (itemKey != null) {
+                        val item = mapOf(
+                            "name" to name,
+                            "description" to description,
+                            "image" to imageUrl,
+                            "addedBy" to (FirebaseAuth.getInstance().currentUser?.email ?: ""),"addedOn" to System.currentTimeMillis(),
+                            "views" to 0,
+                            "approved" to isCurator,
+                        )
+                        println(item)
+                        itemsReference.child(itemKey).setValue(item).addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                Toast.makeText(context, "Item added successfully", Toast.LENGTH_SHORT).show()
+                                finish()
+                            } else {
+                                Toast.makeText(context, "Error: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
                 }
-            }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Handle error
+                    Toast.makeText(context, "Error: ${databaseError.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
         }
     }
 }

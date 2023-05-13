@@ -107,9 +107,10 @@ class FirebaseRepository {
                         val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
                         val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
                         val views = itemSnapshot.child("views").getValue(Int::class.java)
+                        val approved = itemSnapshot.child("approved").getValue(Boolean::class.java)
 
-                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
-                            val item = Item(itemId, name, description, image, addedOn, addedBy, views)
+                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null && approved != null && approved != false) {
+                            val item = Item(itemId, name, description, image, addedOn, addedBy, views, approved)
                             items.add(item)
                         }
                     }
@@ -138,8 +139,10 @@ class FirebaseRepository {
                     val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
                     val addedOn = dataSnapshot.child("addedOn").getValue(Long::class.java)
                     val views = dataSnapshot.child("views").getValue(Int::class.java)
-                    if (itemId2 != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
-                        val item = Item(itemId2, name, description, image, addedOn, addedBy, views)
+                    val approved = dataSnapshot.child("approved").getValue(Boolean::class.java)
+
+                    if (itemId2 != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null && approved != null) {
+                        val item = Item(itemId2, name, description, image, addedOn, addedBy, views, approved)
                         liveData.value = item
                     }
                 }
@@ -200,8 +203,9 @@ class FirebaseRepository {
                                         val image = dataSnapshot.child("image").getValue(String::class.java)
                                         val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
                                         val views = dataSnapshot.child("views").getValue(Int::class.java)
-                                        if (name != null && fullDescription != null && image != null && addedBy != null && addedOn != null && views != null) {
-                                            val item = Item(itemId, name, description, image, addedOn, addedBy , views)
+                                        val approved = dataSnapshot.child("approved").getValue(Boolean::class.java)
+                                        if (name != null && fullDescription != null && image != null && addedBy != null && addedOn != null && views != null && approved != null) {
+                                            val item = Item(itemId, name, description, image, addedOn, addedBy , views, approved)
                                             items.add(item)
                                         }
                                         processedItems++
@@ -268,9 +272,10 @@ class FirebaseRepository {
                         val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
                         val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
                         val views = itemSnapshot.child("views").getValue(Int::class.java)
+                        val approved = itemSnapshot.child("approved").getValue(Boolean::class.java)
 
-                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
-                            val item = Item(itemId, name, description, image, addedOn, addedBy, views)
+                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null && approved != null && approved != false){
+                            val item = Item(itemId, name, description, image, addedOn, addedBy, views, approved)
                             items.add(item)
                         }
                     }
@@ -303,9 +308,10 @@ class FirebaseRepository {
                         val addedBy = itemSnapshot.child("addedBy").getValue(String::class.java)
                         val addedOn = itemSnapshot.child("addedOn").getValue(Long::class.java)
                         val views = itemSnapshot.child("views").getValue(Int::class.java)
+                        val approved = itemSnapshot.child("approved").getValue(Boolean::class.java)
 
-                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
-                            val item = Item(itemId, name, description, image, addedOn, addedBy, views)
+                        if (itemId != null && name != null && description != null && image != null && addedBy != null && addedOn != null && views != null && approved != null && approved != false) {
+                            val item = Item(itemId, name, description, image, addedOn, addedBy, views, approved)
                             items.add(item)
                         }
                     }
@@ -392,8 +398,10 @@ class FirebaseRepository {
                                             val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
                                             val addedOn = dataSnapshot.child("addedOn").getValue(Long::class.java)
                                             val views = dataSnapshot.child("views").getValue(Int::class.java)
-                                            if (name != null && description != null && image != null && addedBy != null && addedOn != null && views != null) {
-                                                val item = Item(itemId, name, description, image, addedOn, addedBy, views)
+                                            val approved = dataSnapshot.child("approved").getValue(Boolean::class.java)
+
+                                            if (name != null && description != null && image != null && addedBy != null && addedOn != null && views != null && approved != null) {
+                                                val item = Item(itemId, name, description, image, addedOn, addedBy, views, approved)
                                                 items.add(item)
                                             }
                                             processedItems++

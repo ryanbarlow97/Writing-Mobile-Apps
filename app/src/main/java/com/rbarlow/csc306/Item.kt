@@ -8,4 +8,5 @@ data class Item(
     var addedOn : Long,
     var addedBy : String,
     var views : Int,
+    var approved : Boolean,
 )
