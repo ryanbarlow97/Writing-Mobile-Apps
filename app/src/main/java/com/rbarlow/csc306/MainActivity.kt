@@ -45,7 +45,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         supportActionBar?.setDisplayShowTitleEnabled(false)
-        // Add drawer toggle to the toolbar
         val drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawerLayout.addDrawerListener(drawerToggle)
         drawerToggle.syncState()
@@ -71,7 +70,6 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.pending -> {
-                    // Navigate to the PendingItemsActivity
                     val intent = Intent(this, PendingItemsActivity::class.java)
                     startActivity(intent)
                     drawerLayout.closeDrawers()

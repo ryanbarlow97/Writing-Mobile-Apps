@@ -237,7 +237,7 @@ class FirebaseRepository {
                                         val addedBy = dataSnapshot.child("addedBy").getValue(String::class.java)
                                         val views = dataSnapshot.child("views").getValue(Int::class.java)
                                         val approved = dataSnapshot.child("approved").getValue(Boolean::class.java)
-                                        if (name != null && fullDescription != null && image != null && addedBy != null && addedOn != null && views != null && approved != null) {
+                                        if (name != null && fullDescription != null && image != null && addedBy != null && views != null && approved != null) {
                                             val item = Item(itemId, name, description, image, addedOn, addedBy , views, approved)
                                             items.add(item)
                                         }
@@ -515,17 +515,6 @@ class FirebaseRepository {
             }
     }
     //endregion
-
-    //region Blog Posts
-    fun createBlogPost(blogPost: BlogPost, onComplete: ((Boolean, String?) -> Unit)?) {
-        val blogPostRef = firebaseInstance.reference.child("blogPosts").push()
-        blogPostRef.setValue(blogPost)
-            .addOnCompleteListener { task ->
-                onComplete?.invoke(task.isSuccessful, task.exception?.message)
-            }
-    }
-    //endregion
-
 
     //region comments for blog posts
     fun addCommentToBlogPost(blogPostId: String, commentContent: String, commentAuthor: String, onComplete: ((Boolean, String?) -> Unit)?) {

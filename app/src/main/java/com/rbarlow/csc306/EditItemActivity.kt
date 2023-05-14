@@ -33,7 +33,7 @@ class EditItemActivity : AppCompatActivity() {
     private var imageUrl: String? = null
     private var filePath: Uri? = null
 
-    var firebaseRepository = FirebaseRepository()
+    private var firebaseRepository = FirebaseRepository()
 
     private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
@@ -136,7 +136,7 @@ class EditItemActivity : AppCompatActivity() {
             itemsReference.child(itemKey!!).updateChildren(itemUpdates).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(this, "Item updated successfully", Toast.LENGTH_SHORT).show()
-                    setResult(RESULT_OK) // Add this line to set the result
+                    setResult(RESULT_OK)
                     finish()
                 } else {
                     Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_SHORT).show()

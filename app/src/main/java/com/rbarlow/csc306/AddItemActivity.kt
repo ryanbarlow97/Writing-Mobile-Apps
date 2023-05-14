@@ -27,7 +27,6 @@ class AddItemActivity : AppCompatActivity() {
     private lateinit var itemsReference: DatabaseReference
     private lateinit var storageReference: StorageReference
     private var filePath: Uri? = null
-    private var firebaseRepository = FirebaseRepository()
 
     private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
@@ -109,7 +108,7 @@ class AddItemActivity : AppCompatActivity() {
         val progressListener = OnProgressListener<UploadTask.TaskSnapshot> { taskSnapshot ->
             val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toInt()
             progressBar.progress = progress
-            percentageTextView.text = "$progress%"
+            percentageTextView.text = getString(R.string.uploading_percentage, progress)
         }
 
         uploadTask.addOnProgressListener(progressListener)
@@ -143,7 +142,6 @@ class AddItemActivity : AppCompatActivity() {
     private fun createNewItem(context: Context, name: String, description: String, imageUrl: String) {
         val itemKey = itemsReference.push().key // this will create a unique key for the new item
 
-        //get users role
         val user = FirebaseAuth.getInstance().currentUser
         //use firebase repository to get user role
         if (user != null) {
@@ -174,7 +172,6 @@ class AddItemActivity : AppCompatActivity() {
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
-                    // Handle error
                     Toast.makeText(context, "Error: ${databaseError.message}", Toast.LENGTH_SHORT).show()
                 }
             })

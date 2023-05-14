@@ -59,7 +59,6 @@ class BookmarkAdapter(private val dataSet: List<Item>) :
 
     override fun getItemCount() = dataSet.size
 
-    // Function to set the OnItemClickListener for the adapter
     fun setOnItemClickListener(listener: OnItemClickListener) {
         onItemClickListener = listener
     }

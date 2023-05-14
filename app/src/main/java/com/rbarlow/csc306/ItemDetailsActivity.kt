@@ -43,15 +43,12 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             val itemId = intent.getStringExtra("id")
             if (itemId != null) {
                 firebaseRepository.getItem(itemId).observe(this) { item: Item ->
-                    // Set title
                     val titleTextView = findViewById<TextView>(R.id.title)
                     titleTextView.text = item.name
 
-                    // Set description
                     val descriptionTextView = findViewById<TextView>(R.id.description)
                     descriptionTextView.text = item.description
 
-                    // Set image
                     val image = findViewById<ImageView>(R.id.image)
                     Glide.with(this)
                         .load(item.image)
@@ -69,7 +66,6 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         textToSpeech = TextToSpeech(this, this)
 
-        // Create an instance of FirebaseRepository
         val currentUser = FirebaseAuth.getInstance().currentUser
         val descriptionTextView = findViewById<TextView>(R.id.description)
         val itemId = intent.getStringExtra("id")

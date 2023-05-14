@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.storage.FirebaseStorage
 
 class CreateBlogPostActivity : AppCompatActivity() {
 
@@ -16,8 +15,6 @@ class CreateBlogPostActivity : AppCompatActivity() {
     private lateinit var postContentEditText: EditText
     private lateinit var savePostButton: Button
     private lateinit var postReference: DatabaseReference
-
-    private val firebaseInstance = FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +49,7 @@ class CreateBlogPostActivity : AppCompatActivity() {
     }
 
     private fun createNewBlogPost(title: String, content: String, author: String) {
-        val postKey = postReference.push().key // this will create a unique key for the new blog post
+        val postKey = postReference.push().key
 
         if (postKey != null) {
             val blogPost = mapOf(

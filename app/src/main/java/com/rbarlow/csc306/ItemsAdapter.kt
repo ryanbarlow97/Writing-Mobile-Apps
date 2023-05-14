@@ -58,7 +58,7 @@ class ItemsAdapter(
         private fun loadImage(url: String) {
             Glide.with(context)
                 .load(url)
-                .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache the image for performance
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(imageView)
         }
 
@@ -69,7 +69,6 @@ class ItemsAdapter(
         }
     }
 
-    // Function to set the OnItemClickListener for the adapter
     fun setOnItemClickListener(listener: OnItemClickListener) {
         onItemClickListener = listener
     }
