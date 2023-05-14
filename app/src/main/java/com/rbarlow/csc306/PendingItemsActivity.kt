@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.lifecycle.Observer
 
 class PendingItemsActivity : AppCompatActivity() {
 
@@ -30,8 +29,8 @@ class PendingItemsActivity : AppCompatActivity() {
             }
         })
 
-        firebaseRepository.getAllUnapprovedItems().observe(this, Observer { items ->
+        firebaseRepository.getAllUnapprovedItems().observe(this) { items ->
             adapter.updateItems(items)
-        })
+        }
     }
 }

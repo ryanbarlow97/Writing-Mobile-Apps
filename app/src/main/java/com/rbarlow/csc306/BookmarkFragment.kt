@@ -24,7 +24,7 @@ class BookmarkFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         _binding = FragmentBookmarkBinding.inflate(inflater, container, false)
 
@@ -50,25 +50,14 @@ class BookmarkFragment : Fragment() {
 
             val adapter = BookmarkAdapter(items)
             bookmarkRecyclerView.adapter = adapter
-
-            firebaseRepository.getBookmarkedItems(currentUser).observe(viewLifecycleOwner) { items ->
-                progressBar.visibility = View.GONE
-                if (items.isEmpty()) {
-                    emptyView.visibility = View.VISIBLE
-                } else {
-                    emptyView.visibility = View.GONE
+            adapter.setOnItemClickListener(object : BookmarkAdapter.OnItemClickListener {
+                override fun onItemClick(item: Item) {
+                    val intent = Intent(requireContext(), ItemDetailsActivity::class.java)
+                    intent.putExtra("id", item.id)
+                    startActivity(intent)
                 }
-
-                val adapter = BookmarkAdapter(items)
-                adapter.setOnItemClickListener(object : BookmarkAdapter.OnItemClickListener {
-                    override fun onItemClick(item: Item) {
-                        val intent = Intent(requireContext(), ItemDetailsActivity::class.java)
-                        intent.putExtra("id", item.id)
-                        startActivity(intent)
-                    }
-                })
-                bookmarkRecyclerView.adapter = adapter
-            }
+            })
+            bookmarkRecyclerView.adapter = adapter
         }
 
         return binding.root

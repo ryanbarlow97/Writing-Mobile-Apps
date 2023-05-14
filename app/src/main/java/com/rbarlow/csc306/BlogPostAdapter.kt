@@ -10,25 +10,21 @@ import java.util.*
 
 class BlogPostAdapter(private val blogPosts: List<BlogPost>, private val onBlogPostClickListener: OnBlogPostClickListener) : RecyclerView.Adapter<BlogPostAdapter.BlogPostViewHolder>() {
 
-    // This interface will be used to handle clicks on blog post items in the RecyclerView
     interface OnBlogPostClickListener {
         fun onBlogPostClick(blogPost: BlogPost)
     }
 
-    // ViewHolder class for holding references to the views in the item_blog_post XML layout
     class BlogPostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val title: TextView = itemView.findViewById(R.id.blog_post_title)
         val author: TextView = itemView.findViewById(R.id.blog_post_author)
         val timestamp: TextView = itemView.findViewById(R.id.blog_post_timestamp)
     }
 
-    // This method inflates the item_blog_post XML layout and returns a ViewHolder instance with the views
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BlogPostViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_blog_post, parent, false)
         return BlogPostViewHolder(view)
     }
 
-    // This method binds the data from the BlogPost object to the views in the ViewHolder
     override fun onBindViewHolder(holder: BlogPostViewHolder, position: Int) {
         val blogPost = blogPosts[position]
 
@@ -42,7 +38,6 @@ class BlogPostAdapter(private val blogPosts: List<BlogPost>, private val onBlogP
         }
     }
 
-    // This method returns the number of items in the blogPosts list
     override fun getItemCount(): Int {
         return blogPosts.size
     }

@@ -92,4 +92,7 @@
     <string name="comment_text">Comment text</string>
     <string name="featured_item_image">Featured Item Image</string>
     <string name="add_artefact_button">Add Artefact Button</string>
+    <string name="bookmarked_on">Bookmarked on: %1$s</string>
+    <string name="not_logged_in">Not logged in</string>
+
 </resources>

@@ -19,18 +19,19 @@ class BookmarkAdapter(private val dataSet: List<Item>) :
     private var onItemClickListener: OnItemClickListener? = null
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val titleTextView: TextView = view.findViewById(R.id.bookmark_title)
-        val descriptionTextView: TextView = view.findViewById(R.id.bookmark_description)
-        val timestampTextView: TextView = view.findViewById(R.id.bookmark_timestamp)
-        val bookmarkImage: ImageView = view.findViewById(R.id.bookmark_image)
+        private val titleTextView: TextView = view.findViewById(R.id.bookmark_title)
+        private val descriptionTextView: TextView = view.findViewById(R.id.bookmark_description)
+        private val timestampTextView: TextView = view.findViewById(R.id.bookmark_timestamp)
+        private val bookmarkImage: ImageView = view.findViewById(R.id.bookmark_image)
 
         fun bind(item: Item) {
             titleTextView.text = item.name
             descriptionTextView.text = item.description
 
-            val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+            val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             val timestamp = formatter.format(item.addedOn)
-            timestampTextView.text = "Bookmarked on: $timestamp"
+            val timestampText = context.getString(R.string.bookmarked_on, timestamp)
+            timestampTextView.text = timestampText
 
             // Load image
             Glide.with(context)

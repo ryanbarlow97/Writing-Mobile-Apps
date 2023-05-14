@@ -70,12 +70,10 @@ class BlogPostDetailActivity : AppCompatActivity() {
             firebaseRepository.addCommentToBlogPost(blogPostId, commentContent, commentAuthor) { success, errorMessage ->
                 if (success) {
                     // Comment was added successfully
-                    // Clear EditText and update UI if necessary
                     addCommentEditText.text.clear()
                     loadComments()
                 } else {
                     // There was an error while adding the comment
-                    // Show an error message or handle the error appropriately
                     Toast.makeText(this, "Error: $errorMessage", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -83,7 +81,6 @@ class BlogPostDetailActivity : AppCompatActivity() {
     }
 
     private fun loadBlogPostDetails() {
-        // Fetch blog post details from the database and display them in the TextViews
         blogPostTitle.text = intent.getStringExtra("blogPostTitle")
         val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
         blogPostTimestamp.text = getString(R.string.upload_info, intent.getStringExtra("blogPostAuthor"), formatter.format(intent.getLongExtra("blogPostTimestamp", 0L)))
@@ -91,7 +88,6 @@ class BlogPostDetailActivity : AppCompatActivity() {
     }
 
     private fun loadComments() {
-        // Fetch comments for the selected blog post from the database and display them in the RecyclerView
         val blogPostId = intent.getStringExtra("blogPostId").toString()
         firebaseRepository.getBlogPostComments(blogPostId).observe(this) { comments ->
             commentsAdapter.comments = comments

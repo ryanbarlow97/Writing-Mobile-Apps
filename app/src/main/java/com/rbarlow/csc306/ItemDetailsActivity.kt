@@ -130,7 +130,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun setUploadInfo(item: Item) {
         val uploadInfoTextView = findViewById<TextView>(R.id.upload_info)
         val uploadDate = Date(item.addedOn)
-        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         uploadInfoTextView.text = getString(R.string.upload_info, item.addedBy, formatter.format(uploadDate))
     }
 
@@ -166,7 +166,7 @@ class ItemDetailsActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         editFab = findViewById(R.id.edit_fab)
         // Check if user is logged in, if so, show edit button
 
-        var user = FirebaseAuth.getInstance().currentUser
+        val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
             val userRoleRef =
                 FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")

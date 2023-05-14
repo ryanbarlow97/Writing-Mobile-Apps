@@ -38,7 +38,7 @@ class EditItemActivity : AppCompatActivity() {
     private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val data: Intent? = result.data
-            if (data != null && data.data != null) {
+            if ((data != null) && (data.data != null)) {
                 filePath = data.data
                 try {
                     Glide.with(this)
@@ -71,9 +71,7 @@ class EditItemActivity : AppCompatActivity() {
             itemNameEditText.setText(item.name)
             itemDescriptionEditText.setText(item.description)
             imageUrl = item.image
-            if (imageUrl != null) {
-                Glide.with(this).load(imageUrl).into(imageView)
-            }
+            Glide.with(this).load(imageUrl).into(imageView)
         }
 
         // Set OnClickListener for the edit button

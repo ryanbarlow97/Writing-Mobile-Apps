@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         val userNameTextView = toolbar.findViewById<TextView>(R.id.toolbar_email)
 
         if (FirebaseAuth.getInstance().currentUser == null) {
-            userNameTextView.text = "Not logged in"
+            userNameTextView.text = getString(R.string.not_logged_in)
         } else {
             userNameTextView.text = FirebaseAuth.getInstance().currentUser?.email
         }
@@ -138,7 +138,7 @@ class MainActivity : AppCompatActivity() {
         logoutItem.isVisible = isLoggedIn
         loginItem.isVisible = !isLoggedIn
 
-        var user = FirebaseAuth.getInstance().currentUser
+        val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
             val userRoleRef =
                 FirebaseDatabase.getInstance("https://csc306b-default-rtdb.europe-west1.firebasedatabase.app")

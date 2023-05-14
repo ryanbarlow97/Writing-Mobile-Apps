@@ -80,14 +80,11 @@ class CategoriesAdapter(
         }
 
         private fun populateViewedItems() {
-            val currentUser = FirebaseAuth.getInstance().currentUser
-            if (currentUser != null) {
+            FirebaseAuth.getInstance().currentUser?.let { currentUser ->
                 FirebaseRepository().getUserViewedItems(currentUser).observe(lifecycleOwner) { viewedItems ->
                     itemsAdapter.updateItems(viewedItems.reversed())
                 }
-            } else {
-                removeViewedCategory()
-            }
+            } ?: removeViewedCategory()
         }
 
         private fun removeViewedCategory() {
