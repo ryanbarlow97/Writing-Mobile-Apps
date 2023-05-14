@@ -86,6 +86,10 @@
     <string name="blog_post_title">Blog Post Title</string>
     <string name="timestamp">Timestamp</string>
     <string name="blog_post_content">Blog Post Content</string>
-    <string name="add_a_comment">Add a comment...</string>
+    <string name="add_a_comment">Add a comment…</string>
     <string name="add_comment">Add Comment</string>
+    <string name="author">Author</string>
+    <string name="comment_text">Comment text</string>
+    <string name="featured_item_image">Featured Item Image</string>
+    <string name="add_artefact_button">Add Artefact Button</string>
 </resources>
