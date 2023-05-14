@@ -9,13 +9,11 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CSC306"
-        tools:targetApi="28">
+        android:theme="@style/AppTheme">
         <activity
             android:name=".LoginActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.CSC306">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,8 +23,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.CSC306">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -36,8 +33,7 @@
         <activity
             android:name=".ItemDetailsActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.CSC306">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -46,21 +42,27 @@
         </activity>
         <activity
             android:name=".CreateAccountActivity"
-            android:label="Create Account" />
+            android:label="Create Account"
+            android:theme="@style/AppTheme" />
 
         <activity android:name=".AddItemActivity"
-            android:label="Add Item" />
+            android:label="Add Item"
+            android:theme="@style/AppTheme" />
 
         <activity android:name=".EditItemActivity"
-            android:label="Edit Item" />
+            android:label="Edit Item"
+            android:theme="@style/AppTheme" />
         <activity android:name=".BlogPostDetailActivity"
-            android:label="Blog Post Detail" />
+            android:label="Blog Post Detail"
+            android:theme="@style/AppTheme" />
 
         <activity android:name=".CreateBlogPostActivity"
-            android:label="Create Blog Post" />
+            android:label="Create Blog Post"
+            android:theme="@style/AppTheme" />
 
         <activity android:name=".PendingItemsActivity"
-            android:label="Pending Items" />
+            android:label="Pending Items"
+            android:theme="@style/AppTheme" />
 
     </application>
 </manifest>

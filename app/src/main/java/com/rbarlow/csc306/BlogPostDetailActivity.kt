@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.*
@@ -16,12 +17,12 @@ import java.util.*
 class BlogPostDetailActivity : AppCompatActivity() {
 
     private lateinit var blogPostTitle: TextView
-    private lateinit var blogPostAuthor: TextView
     private lateinit var blogPostTimestamp: TextView
     private lateinit var blogPostContent: TextView
     private lateinit var commentsRecyclerView: RecyclerView
     private lateinit var addCommentEditText: EditText
     private lateinit var addCommentButton: Button
+    private lateinit var addCommentBox: TextInputLayout
 
     private lateinit var commentsAdapter: BlogCommentAdapter
     private val firebaseRepository = FirebaseRepository()
@@ -36,6 +37,7 @@ class BlogPostDetailActivity : AppCompatActivity() {
         commentsRecyclerView = findViewById(R.id.comments_recycler_view)
         addCommentEditText = findViewById(R.id.add_comment_edit_text)
         addCommentButton = findViewById(R.id.add_comment_button)
+        addCommentBox = findViewById(R.id.add_comment_text_input_layout)
 
         commentsRecyclerView.layoutManager = LinearLayoutManager(this)
         commentsAdapter = BlogCommentAdapter(emptyList())
@@ -45,6 +47,7 @@ class BlogPostDetailActivity : AppCompatActivity() {
         if (user == null){
             addCommentButton.visibility = View.GONE
             addCommentEditText.visibility = View.GONE
+            addCommentBox.visibility = View.GONE
         }
 
         // Load blog post details and comments

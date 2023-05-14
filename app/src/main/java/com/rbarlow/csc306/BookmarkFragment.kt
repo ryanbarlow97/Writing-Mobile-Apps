@@ -1,5 +1,6 @@
 package com.rbarlow.csc306
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -49,6 +50,25 @@ class BookmarkFragment : Fragment() {
 
             val adapter = BookmarkAdapter(items)
             bookmarkRecyclerView.adapter = adapter
+
+            firebaseRepository.getBookmarkedItems(currentUser).observe(viewLifecycleOwner) { items ->
+                progressBar.visibility = View.GONE
+                if (items.isEmpty()) {
+                    emptyView.visibility = View.VISIBLE
+                } else {
+                    emptyView.visibility = View.GONE
+                }
+
+                val adapter = BookmarkAdapter(items)
+                adapter.setOnItemClickListener(object : BookmarkAdapter.OnItemClickListener {
+                    override fun onItemClick(item: Item) {
+                        val intent = Intent(requireContext(), ItemDetailsActivity::class.java)
+                        intent.putExtra("id", item.id)
+                        startActivity(intent)
+                    }
+                })
+                bookmarkRecyclerView.adapter = adapter
+            }
         }
 
         return binding.root

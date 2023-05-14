@@ -43,7 +43,7 @@ class CategoriesAdapter(
 
             when (category.title) {
                 "New" -> populateNewItems()
-                "Hot" -> populateHotItems()
+                "Top" -> populateHotItems()
                 "Viewed" -> populateViewedItems()
             }
         }

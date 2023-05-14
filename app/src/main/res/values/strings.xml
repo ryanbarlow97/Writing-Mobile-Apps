@@ -69,4 +69,23 @@
     <string name="upload_info">Uploaded by %1$s on %2$s</string>
     <string name="create_blog_post">Create Blog Post</string>
     <string name="view_pending">Pending</string>
+    <string name="add_item">Add Item</string>
+    <string name="title">Title</string>
+    <string name="content">Content</string>
+    <string name="save_post">Save Post</string>
+    <string name="item_name">Item Name</string>
+    <string name="image_of_the_artefact">Image of the Artefact</string>
+    <string name="_0">0%</string>
+    <string name="uploading">Uploading…</string>
+    <string name="email">Email</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="bookmark_description">Bookmark Description</string>
+    <string name="bookmark_title">Bookmark Title</string>
+    <string name="bookmark_timestamp">Bookmark Timestamp</string>
+    <string name="historical_object">Historical Object</string>
+    <string name="blog_post_title">Blog Post Title</string>
+    <string name="timestamp">Timestamp</string>
+    <string name="blog_post_content">Blog Post Content</string>
+    <string name="add_a_comment">Add a comment...</string>
+    <string name="add_comment">Add Comment</string>
 </resources>

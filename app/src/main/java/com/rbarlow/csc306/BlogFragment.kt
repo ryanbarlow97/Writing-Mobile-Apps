@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,10 +18,12 @@ class BlogFragment : Fragment(), BlogPostAdapter.OnBlogPostClickListener {
     private lateinit var blogPostsRecyclerView: RecyclerView
     private lateinit var fab: FloatingActionButton
     private val firebaseRepository = FirebaseRepository()
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_blog, container, false)
-
+        progressBar = view.findViewById(R.id.blog_progress_bar)
+        progressBar.visibility = View.VISIBLE
 
         blogPostsRecyclerView = view.findViewById(R.id.blog_posts_recycler_view)
         fab = view.findViewById(R.id.fab)
@@ -34,8 +37,12 @@ class BlogFragment : Fragment(), BlogPostAdapter.OnBlogPostClickListener {
             firebaseRepository.getUserRole(user.uid).observe(viewLifecycleOwner) { role ->
                 if (role == "curator") {
                     fab.visibility = View.VISIBLE
+                } else {
+                    fab.visibility = View.GONE
                 }
             }
+        } else {
+            fab.visibility = View.GONE
         }
 
         // Load blog posts and display in RecyclerView
@@ -53,6 +60,7 @@ class BlogFragment : Fragment(), BlogPostAdapter.OnBlogPostClickListener {
     private fun loadBlogPosts() {
         // Fetch blog posts from the database
         firebaseRepository.getBlogPosts().observe(viewLifecycleOwner) { blogPosts ->
+            progressBar.visibility = View.GONE
             if (blogPosts != null) {
                 // Create an instance of BlogPostAdapter and set it to the RecyclerView
                 val adapter = BlogPostAdapter(blogPosts, this)

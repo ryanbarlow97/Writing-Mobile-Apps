@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
@@ -15,6 +16,7 @@ class HomePageFragment : Fragment() {
     private var _binding: FragmentHomePageBinding? = null
     private val binding get() = _binding!!
     private val firebaseRepository = FirebaseRepository()
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -22,15 +24,19 @@ class HomePageFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomePageBinding.inflate(inflater, container, false)
+        progressBar = binding.homePageProgressBar
         return binding.root
     }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        progressBar.visibility = View.VISIBLE
         setupRecyclerView()
         observeCategories()
         observeUserRole()
+
     }
 
     private fun setupRecyclerView() {
@@ -41,6 +47,7 @@ class HomePageFragment : Fragment() {
 
     private fun observeCategories() {
         firebaseRepository.getCategories().observe(viewLifecycleOwner) { categories ->
+            progressBar.visibility = View.GONE
             if (categories != null) {
                 val adapter = binding.recyclerHomePage.adapter as CategoriesAdapter
                 adapter.categories = categories
