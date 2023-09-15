@@ -1,4 +1,4 @@
-# CSC306B-Writing-Mobile-Apps
+# Writing Mobile Apps
 
 In the Robert Recorde Room, CoFo 102, (and Boardroom, CoFo 401) you can find cabinets of historical artefacts taken from the History of Computing Collection. 
 The assignments for CSC306 require you to develop a companion app using the Android platform.
